@@ -2,4 +2,5 @@ autoload/*
 .backup.vimrc
 .netrwhist
 plugged/*
+colors/*
 
