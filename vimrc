@@ -87,7 +87,7 @@ endfunc
 
 " 设置文件头
 func Get_sign() 
-	if &filetype == 'sh' || &filetype == 'python'
+	if (&filetype == 'sh' || &filetype == 'python' || &filetype == 'zsh')
 		return '# '
 	elseif &filetype == 'lua'
 		return '-- '
@@ -102,7 +102,7 @@ func Pad_header()
 	let sign = Get_sign()
 	let tail = ''
 
-	if &filetype == 'sh'
+	if (&filetype == 'sh' || &filetype == 'zsh')
 		let header_comment .= "#!/usr/bin/env zsh"."\n"
 		let header_comment .= "# -*- coding: utf-8 -*-"."\n"
 	" 难以吐槽这个python
@@ -127,6 +127,7 @@ func Update_info()
 	let payload = strftime("%c")
 	let prefix = 'Last modified at '
 	let exam = sign.prefix.'.*'
+	let repl = sign.prefix.payload
 	let st = 0
 	let ed = 8
 	let flag = 0
@@ -134,20 +135,22 @@ func Update_info()
 		let linum = getline(st)
 		let test = match(linum, exam)
 		if (test != -1)
-			let res = substitute(linum, exam, sign.'Last modified at '.payload, '')
+			let res = substitute(linum, exam, repl, '')
 			call setline(st, res) 
 			let flag = 1
 			break
 		endif
 		let st = st + 1
 	endwhile
+
+	" exec '!echo sign:"'.sign.'" filetype:"'.&filetype.'" >> ~/log.txt'
 	if (flag == 0)
 		call append(0, sign.prefix.payload)
 	endif
 endfunc
 
 autocmd BufNewFile *.{cc,java,lua,[ch]pp,[ch],[hs]h,py,go,[jt]s} exec "call Pad_header()"
-autocmd BufWritePre,filewritepre,BufDelete *.{cc,java,lua,[ch]pp,[ch],[hs]h,py,go,[jt]s} exec "call Update_info()"
+autocmd BufWritePre,filewritepre *.{cc,java,lua,[ch]pp,[ch],[hs]h,py,go,[jt]s} exec "call Update_info()"
 
 
 "" 其它内置的配置选项

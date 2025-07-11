@@ -1,10 +1,11 @@
-/// Last modified at 2025年07月11日 星期五 22时32分58秒
 #!/usr/bin/env zsh
 # -*- coding: utf-8 -*-
 # SPDX-LICENSE-IDENTIFIER: GPL2.0
 # (C) All rights reserved. Author: <kisfg@hotmail.com> in 2025
 # Created at 2025年07月06日 星期日 18时04分20秒
+# Last modified at 2025年07月11日 星期五 23时26分00秒
 
+# 
 # TODO: 当前主机探测目前给定的云服务器是否可达
 # 然后自动修改 autoplug 内的 plug.vim 插件
 # 没有实际的跑过，需要测一测
