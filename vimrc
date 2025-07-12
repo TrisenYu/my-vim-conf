@@ -15,7 +15,19 @@ let g:ycm_semantic_triggers = {
 	\ 'c,cpp,python,rust,java,go,erlang,perl,cs,lua,javascript': ['re!\w{2}'],
 	\ }
 let g:ycm_filetype_whitelist = {
-	\ "c,cpp,hpp,cc,h,lua,python,go,typescript,sh,zsh,rust,go,javascript": 1,
+	\ "c": 1,
+	\ "cpp": 1,
+	\ "hpp": 1,
+	\ "cc": 1,
+	\ "h": 1,
+	\ "lua": 1,
+	\ "python": 1,
+	\ "go": 1,
+	\ "typescript": 1,
+	\ "sh": 1,
+	\ "zsh": 1,
+	\ "rust": 1,
+	\ "javascript": 1,
 	\ }
 " 语法关键字自动补全
 let g:ycm_seed_identifiers_with_sytanx = 1
