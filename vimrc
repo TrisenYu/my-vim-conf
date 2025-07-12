@@ -8,24 +8,14 @@ call plug#begin()
 	Plug 'ycm-core/YouCompleteMe'				" 自动补全
 	Plug 'nathanaelkane/vim-indent-guides'		" tab高亮
 	Plug 'cohama/lexima.vim'					" 自动闭合括号
+	Plug 'rust-lang/rust.vim'
 call plug#end()
 
 let g:ycm_semantic_triggers = {
-	\ 'c,cpp,python,java,go,erlang,perl,cs,lua,javascript': ['re!\w{2}'],
+	\ 'c,cpp,python,rust,java,go,erlang,perl,cs,lua,javascript': ['re!\w{2}'],
 	\ }
 let g:ycm_filetype_whitelist = {
-	\ "c": 1,
-	\ "cpp": 1,
-	\ "hpp": 1,
-	\ "cc": 1,
-	\ "h": 1,
-	\ "py": 1,
-	\ "go": 1,
-	\ "js": 1,
-	\ "ts": 1,
-	\ "objc": 1,
-	\ "sh": 1,
-	\ "zsh": 1,
+	\ "c,cpp,hpp,cc,h,lua,python,go,typescript,sh,zsh,rust,go,javascript": 1,
 	\ }
 " 语法关键字自动补全
 let g:ycm_seed_identifiers_with_sytanx = 1
@@ -45,13 +35,13 @@ let g:lexima_enable_basic_rules = 1
 " RGB彩色括号
 let g:rainbow_active = 1
 
-let g:NERDSpaceDelims			= 1		" 在注释符号后加一个空格
-let g:NERDCompactSexyComs		= 1		" 紧凑排布多行注释
-let g:NERDToggleCheckAllLines	= 1		" 检查选中项是否有没被注释的项，有则全部注释
-let g:NERDDefaultAlign			= 'left'	" 逐行注释左对齐
-let g:NERDCommentEmptyLines		= 0		" 允许空行注释
-let g:NERDTrimTrailingWhitespace= 1		" 取消注释时删除行尾空格
-let g:NERDToggleCheckAllLines	= 1		" 检查选中的行操作是否成功
+let g:NERDSpaceDelims			 = 1		" 在注释符号后加一个空格
+let g:NERDCompactSexyComs		 = 1		" 紧凑排布多行注释
+let g:NERDToggleCheckAllLines	 = 1		" 检查选中项是否有没被注释的项，有则全部注释
+let g:NERDDefaultAlign			 = 'left'	" 逐行注释左对齐
+let g:NERDCommentEmptyLines		 = 0		" 允许空行注释
+let g:NERDTrimTrailingWhitespace = 1		" 取消注释时删除行尾空格
+let g:NERDToggleCheckAllLines	 = 1		" 检查选中的行操作是否成功
 let g:NERDTreeWinSize = 16
 
 let g:indent_guides_enable_on_vim_startup = 1
@@ -91,8 +81,10 @@ func Get_sign()
 		return '# '
 	elseif &filetype == 'lua'
 		return '-- '
-	else
+	elseif &filetype != 'rust'
 		return '/// '
+	else
+		return '// '
 	endif
 endfunc
 
@@ -102,24 +94,22 @@ func Pad_header()
 	let sign = Get_sign()
 	let tail = ''
 
-	if (&filetype == 'sh' || &filetype == 'zsh')
-		let header_comment .= "#!/usr/bin/env zsh"."\n"
-		let header_comment .= "# -*- coding: utf-8 -*-"."\n"
 	" 难以吐槽这个python
-	elseif &filetype == 'python'
-		let header_comment .= "#!/usr/bin/env python3"."\n"
+	if (&filetype == 'sh' || &filetype == 'zsh' || &filetype == 'python')
+		let header_comment .= "#!/usr/bin/env ".&filetype."\n"
 		let header_comment .= "# -*- coding: utf-8 -*-"."\n"
 	else
-		let tail .= sign."\n"
+		let tail = sign."\n"
 	endif
+
+	exec '!echo filetype is "'.&filetype.'" >> ~/log.txt'
 
 	let header_comment .= sign.license.tail
 	let header_comment .= sign."(C) All rights reserved. "
 	let header_comment .= "Author: <kisfg@hotmail.com> in ".strftime("%Y")."\n"
 	let header_comment .= sign."Created at ".strftime("%c")."\n"
 	let header_comment .= sign."Last modified at ".strftime("%c")."\n"
-	exec "normal i".header_comment
-	exec "normal G"
+	exec "normal i".header_comment | exec "normal G"
 endfunc
 
 func Update_info() 
@@ -143,14 +133,13 @@ func Update_info()
 		let st = st + 1
 	endwhile
 
-	" exec '!echo sign:"'.sign.'" filetype:"'.&filetype.'" >> ~/log.txt'
 	if (flag == 0)
 		call append(0, sign.prefix.payload)
 	endif
 endfunc
 
-autocmd BufNewFile *.{cc,java,lua,[ch]pp,[ch],[hs]h,py,go,[jt]s} exec "call Pad_header()"
-autocmd BufWritePre,filewritepre *.{cc,java,lua,[ch]pp,[ch],[hs]h,py,go,[jt]s} exec "call Update_info()"
+autocmd BufNewFile *.{cc,java,lua,[ch]pp,[ch],[hs]h,py,go,[jrt]s} exec "call Pad_header()"
+autocmd BufWritePre,filewritepre *.{cc,java,lua,[ch]pp,[ch],[hs]h,py,go,[jrt]s} exec "call Update_info()"
 
 
 "" 其它内置的配置选项
@@ -240,3 +229,5 @@ set guifont=Fira\ Code\ Medium\ 12,JetBrains\ Mono\ Medium\ 12
 
 set cursorline
 highlight CursorLine guibg=lightgray
+
+" set statusline += %2*/%L%*   " total lines
