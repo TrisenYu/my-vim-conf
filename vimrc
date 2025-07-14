@@ -9,10 +9,21 @@ call plug#begin()
 	Plug 'nathanaelkane/vim-indent-guides'		" tab高亮
 	Plug 'cohama/lexima.vim'					" 自动闭合括号
 	Plug 'rust-lang/rust.vim'
+	Plug 'preservim/tagbar'						" 层级目录显示
 call plug#end()
 
 let g:ycm_semantic_triggers = {
-	\ 'c,cpp,python,rust,java,go,erlang,perl,cs,lua,javascript': ['re!\w{2}'],
+	\ 'c': ['re!\w{2}'],
+	\ "cpp": ['re!\w{2}'],
+	\ "python": ['re!\w{2}'],
+	\ "rust": ['re!\w{2}'],
+	\ "java": ['re!\w{2}'],
+	\ "go": ['re!\w{2}'],
+	\ "erlang": ['re!\w{2}'],
+	\ "perl": ['re!\w{2}'],
+	\ "cs": ['re!\w{2}'],
+	\ "lua": ['re!\w{2}'],
+	\ "javascript": ['re!\w{2}'],
 	\ }
 let g:ycm_filetype_whitelist = {
 	\ "c": 1,
@@ -38,9 +49,9 @@ let g:ycm_complete_in_comments = 1
 " 回车选中当前项
 " 有点复杂, 参见 github.com/ycm-core/YouCompleteMe/issues/232
 " 然而冇用
-let g:ycm_key_list_select_completion = ['<TAB>']
-let g:ycm_key_list_previous_completion = ['<S-TAB>']
-let g:ycm_key_list_stop_completion = ['<CR>', '<C-y>']
+" let g:ycm_key_list_select_completion = ['<TAB>']
+" let g:ycm_key_list_previous_completion = ['<S-TAB>']
+" let g:ycm_key_list_stop_completion = ['<CR>', '<C-y>']
 
 " 自动闭合
 let g:lexima_enable_basic_rules = 1
@@ -51,7 +62,7 @@ let g:NERDSpaceDelims			 = 1		" 在注释符号后加一个空格
 let g:NERDCompactSexyComs		 = 1		" 紧凑排布多行注释
 let g:NERDToggleCheckAllLines	 = 1		" 检查选中项是否有没被注释的项，有则全部注释
 let g:NERDDefaultAlign			 = 'left'	" 逐行注释左对齐
-let g:NERDCommentEmptyLines		 = 0		" 允许空行注释
+let g:NERDCommentEmptyLines		 = 1		" 允许空行注释
 let g:NERDTrimTrailingWhitespace = 1		" 取消注释时删除行尾空格
 let g:NERDToggleCheckAllLines	 = 1		" 检查选中的行操作是否成功
 let g:NERDTreeWinSize = 16
@@ -66,7 +77,8 @@ autocmd VimEnter * NERDTree | wincmd p
 autocmd BufEnter * exec "call Config_NerdTree()"
 " 返回上一次对该文件的编辑位置
 autocmd BufReadPost * exec "call Ret_to_last_pos()"
-autocmd Filetype * setlocal formatoptions-=cro " 不会自动增加注释
+" 不会自动增加注释
+autocmd Filetype * setlocal formatoptions-=c formatoptions-=r formatoptions-=o
 
 " vimscript 要求函数名首字母大写
 func Config_NerdTree()
@@ -89,7 +101,7 @@ endfunc
 
 " 设置文件头
 func Get_sign() 
-	if (&filetype == 'sh' || &filetype == 'python' || &filetype == 'zsh')
+	if (&filetype == 'sh' || &filetype == 'python' || &filetype == 'zsh' || &filetype == 'makefile')
 		return '# '
 	elseif &filetype == 'lua'
 		return '-- '
@@ -113,8 +125,6 @@ func Pad_header()
 	else
 		let tail = sign."\n"
 	endif
-
-	exec '!echo filetype is "'.&filetype.'" >> ~/log.txt'
 
 	let header_comment .= sign.license.tail
 	let header_comment .= sign."(C) All rights reserved. "
@@ -148,6 +158,9 @@ func Update_info()
 	if (flag == 0)
 		call append(0, sign.prefix.payload)
 	endif
+
+	" 更新后自动去除行末空格
+	silent! %s/\s\+$//ge
 endfunc
 
 autocmd BufNewFile *.{cc,java,lua,[ch]pp,[ch],[hs]h,py,go,[jrt]s} exec "call Pad_header()"
@@ -161,7 +174,8 @@ filetype indent on
 filetype plugin indent on
 
 " ctrl+A 为全选
-" map <C-A> ggVGY
+map <C-A> ggVGY
+nmap <F8> :TagbarToggle<CR>
 
 colorscheme gruvbox
 set background=dark
@@ -241,5 +255,3 @@ set guifont=Fira\ Code\ Medium\ 12,JetBrains\ Mono\ Medium\ 12
 
 set cursorline
 highlight CursorLine guibg=lightgray
-
-" set statusline += %2*/%L%*   " total lines

@@ -3,13 +3,13 @@
 # SPDX-LICENSE-IDENTIFIER: GPL2.0
 # (C) All rights reserved. Author: <kisfg@hotmail.com> in 2025
 # Created at 2025年07月06日 星期日 18时04分20秒
-# Last modified at 2025年07月11日 星期五 23时26分00秒
+# Last modified at 2025年07月14日 星期一 11时49分13秒
 
-# 
+#
 # TODO: 当前主机探测目前给定的云服务器是否可达
 # 然后自动修改 autoplug 内的 plug.vim 插件
 # 没有实际的跑过，需要测一测
-# 
+#
 set -ue
 
 # github
@@ -26,9 +26,9 @@ famous_servers=(
 main_mirror=''
 
 # 有点奇怪，这里和下面又用raw_github
-# TODO: 在国外的设备就不需要替换为镜像站，需要提供参数显示说明
+# TODO: 在国外的设备就不需要替换为镜像站，但需要提供参数显示说明
 function get_color_scheme() {
-	mkdir -p "$color_path" 
+	mkdir -p "$color_path"
 	wget "$raw_github/morhetz/gruvbox/master/colors/gruvbox.vim"-O "$color_path/gruvbox.vim"
 }
 
@@ -73,7 +73,7 @@ function get_fonts() {
 	cd 'JetBrains' && wget "$jetbrain" && tar -xf 'JetBrainsMono-2.304.zip' && cd ..
 	cd 'FiraCode' && wget "$firacode" && tar -xf 'Fira_Code_v6.2.zip' && cd ..
 	# 最后刷新字体
-	fc-cache -fv 
+	fc-cache -fv
 	cd "$curr_dir"
 }
 
