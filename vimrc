@@ -179,6 +179,7 @@ nmap <F8> :TagbarToggle<CR>
 
 colorscheme gruvbox
 set background=dark
+set viminfo='1000,<999
 
 " 无需下发命令延时
 set notimeout
