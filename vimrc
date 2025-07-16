@@ -65,7 +65,7 @@ let g:NERDDefaultAlign			 = 'left'	" 逐行注释左对齐
 let g:NERDCommentEmptyLines		 = 1		" 允许空行注释
 let g:NERDTrimTrailingWhitespace = 1		" 取消注释时删除行尾空格
 let g:NERDToggleCheckAllLines	 = 1		" 检查选中的行操作是否成功
-let g:NERDTreeWinSize = 16
+let g:NERDTreeWinSize			 = 16		" 侧边栏大小
 
 let g:indent_guides_enable_on_vim_startup = 1
 
@@ -101,9 +101,17 @@ endfunc
 
 " 设置文件头
 func Get_sign() 
-	if (&filetype == 'sh' || &filetype == 'python' || &filetype == 'zsh' || &filetype == 'makefile')
-		return '# '
-	elseif &filetype == 'lua'
+	let sharp_list = [
+		\ 'sh', 'python', 
+		\ 'zsh', 'make', 
+		\ 'cmake'
+	\ ]
+	for item in sharp_list
+		if &filetype == item
+			return '# '
+		endif
+	endfor
+	if &filetype == 'lua'
 		return '-- '
 	elseif &filetype != 'rust'
 		return '/// '
@@ -163,8 +171,8 @@ func Update_info()
 	silent! %s/\s\+$//ge
 endfunc
 
-autocmd BufNewFile *.{cc,java,lua,[ch]pp,[ch],[hs]h,py,go,[jrt]s} exec "call Pad_header()"
-autocmd BufWritePre,filewritepre *.{cc,java,lua,[ch]pp,[ch],[hs]h,py,go,[jrt]s} exec "call Update_info()"
+autocmd BufNewFile *.{cc,java,lua,[ch]pp,[ch],[hs]h,py,go,[jrt]s},makefile,CMakeLists.txt exec "call Pad_header()"
+autocmd BufWritePre,filewritepre *.{cc,java,lua,[ch]pp,[ch],[hs]h,py,go,[jrt]s},makefile,CMakeLists.txt exec "call Update_info()"
 
 
 "" 其它内置的配置选项
@@ -175,6 +183,7 @@ filetype plugin indent on
 
 " ctrl+A 为全选
 map <C-A> ggVGY
+map <silent> <C-e> :NERDTreeToggle<CR>
 nmap <F8> :TagbarToggle<CR>
 
 colorscheme gruvbox

@@ -3,7 +3,7 @@
 # SPDX-LICENSE-IDENTIFIER: GPL2.0
 # (C) All rights reserved. Author: <kisfg@hotmail.com> in 2025
 # Created at 2025年07月06日 星期日 18时04分20秒
-# Last modified at 2025年07月14日 星期一 11时49分13秒
+# Last modified at 2025年07月16日 星期三 12时12分11秒
 
 #
 # TODO: 当前主机探测目前给定的云服务器是否可达
@@ -51,7 +51,7 @@ function probe() {
 
 function alter_src_via_mirror() {
 	"probe"
-	res="https://$main_mirror/"
+	res="https://$main_mirror"
 	# \ '^https://git::@github\.com', 'https://wget.la/https://github.com', '')
 	# 需要备份，防止意外
 	mv "$plugman" "$plugman.backup"
@@ -69,11 +69,12 @@ function get_fonts() {
 	mkdir -p "$fonts_dir"
 	cd "$fonts_dir" && mkdir -p 'JetBrains' 'FiraCode'
 	# TODO: 如果有就不要下
-	# TODO: 压缩包解压完以后直接删掉
 	cd 'JetBrains' && wget "$jetbrain" && tar -xf 'JetBrainsMono-2.304.zip' && cd ..
 	cd 'FiraCode' && wget "$firacode" && tar -xf 'Fira_Code_v6.2.zip' && cd ..
+	# TODO: 压缩包解压没问题以后直接删掉
 	# 最后刷新字体
-	fc-cache -fv
+	fc-cache -fv # | tee -a './tmp.log'
+	# cat 'tmp.log' | grep -ic 'Fira Code'
 	cd "$curr_dir"
 }
 
@@ -86,6 +87,7 @@ function set_up_config() {
 	"get_plug_manager"
 	"get_color_scheme"
 	"get_fonts"
+	echo 'done...'
 }
 
 # 整个shellscript的入口
