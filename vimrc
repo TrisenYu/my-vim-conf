@@ -79,6 +79,9 @@ autocmd BufEnter * exec "call Config_NerdTree()"
 autocmd BufReadPost * exec "call Ret_to_last_pos()"
 " 不会自动增加注释
 autocmd Filetype * setlocal formatoptions-=c formatoptions-=r formatoptions-=o
+" TODO: view就要自己清理了
+autocmd BufWinLeave * silent mkview
+autocmd BufWinEnter * silent loadview
 
 " vimscript 要求函数名首字母大写
 func Config_NerdTree()
@@ -227,7 +230,7 @@ set nostartofline
 
 set smartcase
 set incsearch
-set nowrap " 不自动折行
+" set nowrap " 不自动折行
 set linebreak " 遇到特殊符号才折行
 syntax enable
 

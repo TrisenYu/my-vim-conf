@@ -3,7 +3,7 @@
 # SPDX-LICENSE-IDENTIFIER: GPL2.0
 # (C) All rights reserved. Author: <kisfg@hotmail.com> in 2025
 # Created at 2025年07月06日 星期日 18时04分20秒
-# Last modified at 2025年07月16日 星期三 12时12分11秒
+# Last modified at 2025年07月22日 星期二 01时01分35秒
 
 #
 # TODO: 当前主机探测目前给定的云服务器是否可达
@@ -16,9 +16,12 @@ set -ue
 raw_github='raw.githubusercontent.com'
 main_github='https://github.com'
 # 本地配置
-color_path='~/.vim/colors'
-plugman='~/.vim/autoload'
+vimdir="$HOME/.vim"
+color_path="$vimdir/colors"
+plugman="$vimdir/autoload"
+fonts_dir="$vimdir/fonts/"
 
+url_prefix="$main_github"
 famous_servers=(
 	'wget.la'
 	'gh-proxy.com'
@@ -29,7 +32,7 @@ main_mirror=''
 # TODO: 在国外的设备就不需要替换为镜像站，但需要提供参数显示说明
 function get_color_scheme() {
 	mkdir -p "$color_path"
-	wget "$raw_github/morhetz/gruvbox/master/colors/gruvbox.vim"-O "$color_path/gruvbox.vim"
+	wget "$raw_github/morhetz/gruvbox/master/colors/gruvbox.vim" -O "$color_path/gruvbox.vim"
 }
 
 
@@ -50,6 +53,15 @@ function probe() {
 
 
 function alter_src_via_mirror() {
+	select obj in "mirror url" "origin url"; do
+		if [[ -n $obj ]]; then
+			break
+		fi
+	done
+	if [[ $obj == '2' ]]; then
+		url_prefix="$main_github"
+		return
+	fi
 	"probe"
 	res="https://$main_mirror"
 	# \ '^https://git::@github\.com', 'https://wget.la/https://github.com', '')
@@ -57,14 +69,13 @@ function alter_src_via_mirror() {
 	mv "$plugman" "$plugman.backup"
 	# 注意下面的引号
 	sed -i "s#'$main_github#'$res#g" "$plugman"
+	url_prefix="$res/$main_github"
 }
 
 function get_fonts() {
 	# TODO: 如果能在这里换最新的字体也不错
-	url_prefix="https://$main_mirror/$main_github"
 	jetbrain="$url_prefix/JetBrains/JetBrainsMono/releases/download/v2.304/JetBrainsMono-2.304.zip"
 	firacode="$url_prefix/tonsky/FiraCode/releases/download/6.2/Fira_Code_v6.2.zip"
-	fonts_dir="~/.vim/fonts/"
 	curr_dir=`pwd`
 	mkdir -p "$fonts_dir"
 	cd "$fonts_dir" && mkdir -p 'JetBrains' 'FiraCode'
@@ -84,13 +95,15 @@ function get_plug_manager() {
 }
 
 function set_up_config() {
+	# TODO: 下面两个都用rawgithub
 	"get_plug_manager"
 	"get_color_scheme"
+	# TODO: 镜像源是否需要的检查 应该一开始就做了
 	"get_fonts"
 	echo 'done...'
 }
 
 # 整个shellscript的入口
-"set_up_config"
 "alter_src_via_mirror"
+"set_up_config"
 # 剩下就是自己进vim里面:PlugInstall

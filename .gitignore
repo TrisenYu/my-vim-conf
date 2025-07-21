@@ -1,5 +1,7 @@
 autoload/*
+view/*
 .netrwhist
 plugged/*
 colors/*
+
 
