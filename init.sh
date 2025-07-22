@@ -3,7 +3,7 @@
 # SPDX-LICENSE-IDENTIFIER: GPL2.0
 # (C) All rights reserved. Author: <kisfg@hotmail.com> in 2025
 # Created at 2025年07月06日 星期日 18时04分20秒
-# Last modified at 2025年07月22日 星期二 17时28分38秒
+# Last modified at 2025年07月22日 星期二 22时08分54秒
 set -ue
 
 # github
@@ -21,6 +21,7 @@ url_prefix="$main_github"
 famous_servers=(
 	'wget.la'
 	'gh-proxy.com'
+	'gh.xmly.dev'
 )
 main_mirror=''
 
@@ -55,7 +56,7 @@ function alter_src_via_mirror() {
 		fi
 	done
 	# 如果本身处在gfw外就不需要用镜像源，也不需要更改plugman内的内容
-	if [[ $obj == '2' ]]; then
+	if [[ $obj == 'origin url' ]]; then
 		url_prefix="$main_github"
 		return
 	fi

@@ -1,0 +1,22 @@
+name: init_sh CI/CD
+
+on: [push]
+
+jobs:
+  fetch_assets_test:
+    runs-on: ubuntu-latest
+    steps:
+      - name: 切分支
+        uses: actions/checkout@main
+
+      - name: 安装依赖
+        run: sudo apt-get install zsh
+
+      - name: 运行 init.sh 并检查安装效果
+        run: |
+          echo -e "3\n-1\n2\n" > tmp.txt
+          zsh init.sh < tmp.txt
+          rm tmp.txt
+          cd ~/.vim/
+          ls autoload colors fonts 
+
