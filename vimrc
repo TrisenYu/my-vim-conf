@@ -69,19 +69,6 @@ let g:NERDTreeWinSize			 = 16		" 侧边栏大小
 
 let g:indent_guides_enable_on_vim_startup = 1
 
-""" 自动命令配置
-" TODO: 检查插件是否存在，如果不存在则安装
-
-" 启动nerdTree并把光标留在第二个窗口
-autocmd VimEnter * NERDTree | wincmd p
-autocmd BufEnter * exec "call Config_NerdTree()"
-" 返回上一次对该文件的编辑位置
-autocmd BufReadPost * exec "call Ret_to_last_pos()"
-" 不会自动增加注释
-autocmd Filetype * setlocal formatoptions-=c formatoptions-=r formatoptions-=o
-" TODO: view就要自己清理了
-autocmd BufWinLeave * silent mkview
-autocmd BufWinEnter * silent loadview
 
 " vimscript 要求函数名首字母大写
 func Config_NerdTree()
@@ -176,6 +163,19 @@ endfunc
 
 autocmd BufNewFile *.{cc,java,lua,[ch]pp,[ch],[hs]h,py,go,[jrt]s},makefile,CMakeLists.txt exec "call Pad_header()"
 autocmd BufWritePre,filewritepre *.{cc,java,lua,[ch]pp,[ch],[hs]h,py,go,[jrt]s},makefile,CMakeLists.txt exec "call Update_info()"
+""" 自动命令配置
+" TODO: 检查插件是否存在，如果不存在则安装
+
+" 启动nerdTree并把光标留在第二个窗口
+autocmd VimEnter * NERDTree | wincmd p
+autocmd BufEnter * exec "call Config_NerdTree()"
+" 返回上一次对该文件的编辑位置
+autocmd BufReadPost * exec "call Ret_to_last_pos()"
+" 不会自动增加注释
+autocmd Filetype * setlocal formatoptions-=c formatoptions-=r formatoptions-=o
+" TODO: view就要自己清理了
+autocmd BufWritePre,filewritepre * silent mkview
+autocmd BufWinEnter * silent loadview
 
 
 "" 其它内置的配置选项

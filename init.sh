@@ -3,25 +3,21 @@
 # SPDX-LICENSE-IDENTIFIER: GPL2.0
 # (C) All rights reserved. Author: <kisfg@hotmail.com> in 2025
 # Created at 2025年07月06日 星期日 18时04分20秒
-# Last modified at 2025年07月22日 星期二 01时01分35秒
-
-#
-# TODO: 当前主机探测目前给定的云服务器是否可达
-# 然后自动修改 autoplug 内的 plug.vim 插件
-# 没有实际的跑过，需要测一测
-#
+# Last modified at 2025年07月22日 星期二 17时28分38秒
 set -ue
 
 # github
-raw_github='raw.githubusercontent.com'
+raw_github='https://raw.githubusercontent.com'
 main_github='https://github.com'
 # 本地配置
 vimdir="$HOME/.vim"
 color_path="$vimdir/colors"
-plugman="$vimdir/autoload"
+init_dir="$vimdir/autoload"
+plugman="$init_dir/plug.vim"
 fonts_dir="$vimdir/fonts/"
 
 url_prefix="$main_github"
+# TODO: 如何获取镜像主机名单？
 famous_servers=(
 	'wget.la'
 	'gh-proxy.com'
@@ -58,47 +54,68 @@ function alter_src_via_mirror() {
 			break
 		fi
 	done
+	# 如果本身处在gfw外就不需要用镜像源，也不需要更改plugman内的内容
 	if [[ $obj == '2' ]]; then
 		url_prefix="$main_github"
 		return
 	fi
+
 	"probe"
 	res="https://$main_mirror"
-	# \ '^https://git::@github\.com', 'https://wget.la/https://github.com', '')
-	# 需要备份，防止意外
-	mv "$plugman" "$plugman.backup"
-	# 注意下面的引号
-	sed -i "s#'$main_github#'$res#g" "$plugman"
+	echo "$res"
 	url_prefix="$res/$main_github"
+	raw_github="$res/$raw_github"
+	echo "$url_prefix"
+	echo "$raw_github"
+}
+
+# 入参: 字体文件夹名称 压缩包名称 url
+function detect_font() {
+	fira_code_zip_sha256="0949915ba8eb24d89fd93d10a7ff623f42830d7c5ffc3ecbf960e4ecad3e3e79"
+	mono_zip_sha256="6f6376c6ed2960ea8a963cd7387ec9d76e3f629125bc33d1fdcd7eb7012f7bbf"
+	cd "$1"
+	# TODO: 有具体的文件也不下载，直接退出
+	ls "./$2"
+	if [[ $? != 0 ]]; then
+		wget "$3"
+	fi
+	unzip "$mono_zip" && rm "$mono_zip"
+	cd ..
 }
 
 function get_fonts() {
 	# TODO: 如果能在这里换最新的字体也不错
-	jetbrain="$url_prefix/JetBrains/JetBrainsMono/releases/download/v2.304/JetBrainsMono-2.304.zip"
-	firacode="$url_prefix/tonsky/FiraCode/releases/download/6.2/Fira_Code_v6.2.zip"
+	mono_zip="JetBrainsMono-2.304.zip"
+	fira_zip="Fira_Code_v6.2.zip"
+	jetbrain="$url_prefix/JetBrains/JetBrainsMono/releases/download/v2.304/$mono_zip"
+	firacode="$url_prefix/tonsky/FiraCode/releases/download/6.2/$fira_zip"
 	curr_dir=`pwd`
 	mkdir -p "$fonts_dir"
 	cd "$fonts_dir" && mkdir -p 'JetBrains' 'FiraCode'
-	# TODO: 如果有就不要下
-	cd 'JetBrains' && wget "$jetbrain" && tar -xf 'JetBrainsMono-2.304.zip' && cd ..
-	cd 'FiraCode' && wget "$firacode" && tar -xf 'Fira_Code_v6.2.zip' && cd ..
-	# TODO: 压缩包解压没问题以后直接删掉
+	# TODO: 更改为detect_font() 函数
+	cd 'JetBrains' && wget "$jetbrain" && unzip "$mono_zip" && rm "$mono_zip" && cd ..
+	cd 'FiraCode' && wget "$firacode" && unzip "$fira_zip" && rm "$fira_zip" && cd ..
 	# 最后刷新字体
 	fc-cache -fv # | tee -a './tmp.log'
-	# cat 'tmp.log' | grep -ic 'Fira Code'
 	cd "$curr_dir"
 }
 
 function get_plug_manager() {
-	curl -fLo "$plugman/plug.vim" --create-dirs \
-		 "https://$raw_github/junegunn/vim-plug/master/plug.vim"
+	curl -fLo "$plugman" --create-dirs \
+		 "$raw_github/junegunn/vim-plug/master/plug.vim"
+
+	if [[ "$raw_github" =~ "$main_mirror" ]]; then
+		# 需要备份plugman，防止意外
+		cp "$plugman" "$plugman.backup"
+		# 注意下面的引号
+		# \ '^https://git::@github\.com', 'https://wget.la/https://github.com', '')
+		sed -i "s#'$main_github#'$res#g" "$plugman"
+	fi
 }
 
 function set_up_config() {
-	# TODO: 下面两个都用rawgithub
 	"get_plug_manager"
 	"get_color_scheme"
-	# TODO: 镜像源是否需要的检查 应该一开始就做了
 	"get_fonts"
 	echo 'done...'
 }
