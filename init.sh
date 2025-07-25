@@ -3,13 +3,13 @@
 # SPDX-LICENSE-IDENTIFIER: GPL2.0
 # (C) All rights reserved. Author: <kisfg@hotmail.com> in 2025
 # Created at 2025年07月06日 星期日 18时04分20秒
-# Last modified at 2025年07月25日 星期五 17时42分41秒
+# Last modified at 2025年07月25日 星期五 18时02分38秒
 set -e
 
 # github
 raw_github='https://raw.githubusercontent.com'
 main_github='https://github.com'
-release_path='release/download'
+release_path='releases/download'
 
 # 字体包名称
 mono_zip="JetBrainsMono-2.304.zip"
