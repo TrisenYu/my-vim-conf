@@ -3,14 +3,13 @@
 # SPDX-LICENSE-IDENTIFIER: GPL2.0
 # (C) All rights reserved. Author: <kisfg@hotmail.com> in 2025
 # Created at 2025年07月22日 星期二 17时15分40秒
-# Last modified at 2025年07月25日 星期五 15时47分13秒
-import os
+# Last modified at 2025年07月25日 星期五 16时44分49秒
 from datetime import datetime
+import os
 
 target_dir: str = './view/'
 
-
-def clean_views() -> None:
+def clean_views(rm_all: bool=False) -> None:
     """
     清理当前所在文件夹下的 view 目录中超过15天没有更改的view文件
     """
@@ -22,9 +21,22 @@ def clean_views() -> None:
         _modify_time = os.path.getmtime(conj)
         lst_modify_time = datetime.fromtimestamp(_modify_time)
         time_diff = curr - lst_modify_time
-        if time_diff.days >= 15:
+        if time_diff.days >= 7 or rm_all:
             os.remove(conj)
 
 
 if __name__ == '__main__':
-    clean_views()
+    import argparse
+    vparser = argparse.ArgumentParser(
+        description="vim-view清理脚本配置帮助",
+        allow_abbrev=True
+    )
+    vparser.add_argument(
+        '-ra', '--remove-all',
+        type=bool, default=False,
+        help='删除view目录下的所有记录项'
+    )
+    vargs = vparser.parse_args()
+
+    clean_views(vargs.remove_all)
+    print('done')

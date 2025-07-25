@@ -173,10 +173,13 @@ autocmd BufEnter * exec "call Config_NerdTree()"
 autocmd BufReadPost * exec "call Ret_to_last_pos()"
 " 不会自动增加注释
 autocmd Filetype * setlocal formatoptions-=c formatoptions-=r formatoptions-=o
-" TODO: view就要自己清理了
-" 另外就是这里变了view还是旧的，也需要调用脚本删除才是
 autocmd BufWritePre,filewritepre *.{cc,java,lua,[ch]pp,[ch],[hs]h,py,go,[jrt]s},makefile,CMakeLists.txt silent mkview
 autocmd BufEnter *.{cc,java,lua,[ch]pp,[ch],[hs]h,py,go,[jrt]s},makefile,CMakeLists.txt silent loadview
+
+" 这里来主动删掉
+" TODO: 如果这里没有python怎么办？
+" 
+autocmd BufWritePre vimrc silent exec "!python clean_vimview.py -ra true"
 
 
 "" 其它内置的配置选项
@@ -268,6 +271,6 @@ set selectmode=mouse,key
 set t_Co=256 " 二百五十六色支持
 set guifont=Fira\ Code\ Medium\ 12,JetBrains\ Mono\ Medium\ 12
 
-" set         cursorline
-" high        light CursorLine guibg=lightgray
+set cursorline
+highlight CursorLine guibg=lightgrey
               
