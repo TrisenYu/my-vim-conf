@@ -3,8 +3,8 @@
 # SPDX-LICENSE-IDENTIFIER: GPL2.0
 # (C) All rights reserved. Author: <kisfg@hotmail.com> in 2025
 # Created at 2025年07月06日 星期日 18时04分20秒
-# Last modified at 2025年07月25日 星期五 16时45分27秒
-set -ue
+# Last modified at 2025年07月25日 星期五 17时33分02秒
+set -e
 
 # github
 raw_github='https://raw.githubusercontent.com'
@@ -52,9 +52,7 @@ function _probe() {
 
 function alter_src_via_mirror() {
 	select obj in "mirror url" "origin url"; do
-		if [[ -n $obj ]]; then
-			break
-		fi
+		[[ -n $obj ]] && break
 	done
 	# 如果本身处在gfw外就不需要用镜像源，也不需要更改plugman内的内容
 	if [[ $obj == 'origin url' ]]; then

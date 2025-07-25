@@ -21,10 +21,10 @@ jobs:
         env:
           payload: ${{ matrix.payload  }}
         run: |
-          echo -e "$paload" > tmp.txt
-          zsh init.sh < tmp.txt && rm tmp.txt
-          cd ~/.vim/
-          ls autoload colors fonts 
+          echo -e "$paload" > tmp_inp.txt
+          cat tmp_inp.txt
+          zsh init.sh < tmp_inp.txt && rm tmp_inp.txt
+          cd ~/.vim/ && ls autoload colors fonts/*
 
   python-remove-test:
     runs-on: ubuntu-latest
@@ -43,8 +43,7 @@ jobs:
             touch -t 202001011145 file 
           done
           cd .. && python clean_vimview.py
-          unset test_files
-          ls view/
+          unset test_files && ls view/
 
 
 
