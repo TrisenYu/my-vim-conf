@@ -21,7 +21,7 @@ jobs:
         env:
           payload: ${{ matrix.payload  }}
         run: |
-          echo -e "$paload" > tmp_inp.txt
+          echo -e "$payload" > tmp_inp.txt
           cat tmp_inp.txt
           zsh init.sh < tmp_inp.txt && rm tmp_inp.txt
           cd ~/.vim/ && ls autoload colors fonts/*
