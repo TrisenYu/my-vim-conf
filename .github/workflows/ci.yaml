@@ -3,7 +3,7 @@ name: init_sh CI/CD
 on: [push]
 
 jobs:
-  fetch_assets_test-1:
+  fetch-assets-test-1:
     runs-on: ubuntu-latest
     steps:
       - name: 切分支
@@ -12,13 +12,13 @@ jobs:
       - name: 安装依赖
         run: sudo apt-get install zsh
 
-      - name: 运行 init.sh 并检查安装效果
+      - name: 运行 init.sh 并检查直接安装字体情况
         run: |
           echo -e "3\n-1\n2\n" > tmp.txt
           zsh init.sh < tmp.txt && rm tmp.txt
           cd ~/.vim/
           ls autoload colors fonts 
-  fetch_assets_test-2:
+  fetch-assets-test-2:
     runs-on: ubuntu-latest
     steps:
       - name: 切分支
@@ -33,5 +33,25 @@ jobs:
           zsh init.sh < tmp.txt && rm tmp.txt
           cd ~/.vim/
           ls autoload colors fonts 
+  python-remove-test:
+    runs-on: ubuntu-latest
+    steps:
+      - name: 切分支
+        uses: actions/checkout@main
+        with:
+          python-version: "3.12.9"
+      - name: 准备测试文件并测试
+        # TODO: 后面应该改成 vimrc 内调用 python 来清理view文件夹下的内容才行
+        run: |
+          mkdir -p view && cd view && touch a b c d e f g
+          touch -m 202001011145 a
+          touch -m 202001011145 b
+          touch -m 202001011145 c
+          touch -m 202001011145 d
+          touch -m 202001011145 e
+          touch -m 202001011145 f
+          cd .. && python clean_vimview.py
+          ls view/
+
 
 

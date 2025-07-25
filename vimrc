@@ -174,15 +174,15 @@ autocmd BufReadPost * exec "call Ret_to_last_pos()"
 " 不会自动增加注释
 autocmd Filetype * setlocal formatoptions-=c formatoptions-=r formatoptions-=o
 " TODO: view就要自己清理了
-autocmd BufWritePre,filewritepre * silent mkview
-autocmd BufWinEnter * silent loadview
+" 另外就是这里变了view还是旧的，也需要调用脚本删除才是
+autocmd BufWritePre,filewritepre *.{cc,java,lua,[ch]pp,[ch],[hs]h,py,go,[jrt]s},makefile,CMakeLists.txt silent mkview
+autocmd BufEnter *.{cc,java,lua,[ch]pp,[ch],[hs]h,py,go,[jrt]s},makefile,CMakeLists.txt silent loadview
 
 
 "" 其它内置的配置选项
 filetype on
 filetype plugin on
 filetype indent on
-filetype plugin indent on
 
 " ctrl+A 为全选
 map <C-A> ggVGY
@@ -190,6 +190,7 @@ map <silent> <C-e> :NERDTreeToggle<CR>
 nmap <F8> :TagbarToggle<CR>
 
 colorscheme gruvbox
+" color morning
 set background=dark
 set viminfo='1000,<999
 
@@ -230,6 +231,7 @@ set nostartofline
 
 set smartcase
 set incsearch
+set hlsearch
 " set nowrap " 不自动折行
 set linebreak " 遇到特殊符号才折行
 syntax enable
@@ -266,5 +268,6 @@ set selectmode=mouse,key
 set t_Co=256 " 二百五十六色支持
 set guifont=Fira\ Code\ Medium\ 12,JetBrains\ Mono\ Medium\ 12
 
-set cursorline
-highlight CursorLine guibg=lightgray
+" set         cursorline
+" high        light CursorLine guibg=lightgray
+              
