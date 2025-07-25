@@ -3,7 +3,7 @@
 # SPDX-LICENSE-IDENTIFIER: GPL2.0
 # (C) All rights reserved. Author: <kisfg@hotmail.com> in 2025
 # Created at 2025年07月06日 星期日 18时04分20秒
-# Last modified at 2025年07月25日 星期五 17时33分02秒
+# Last modified at 2025年07月25日 星期五 17时42分41秒
 set -e
 
 # github
@@ -107,7 +107,7 @@ function get_color_scheme() {
 
 function get_plug_manager() {
 	curl -fLo "$plugman" --create-dirs \
-		 "$raw_github/junegunn/vim-plug/baa66bcf349a6f6c125b0b263c112662b0669e1/plug.vim"
+		 "$raw_github/junegunn/vim-plug/baa66bcf349a6f6c125b0b2b63c112662b0669e1/plug.vim"
 	if [[ "$res" != '' ]]; then
 		# 需要备份plugman，防止意外
 		cp "$plugman" "$plugman.backup"
