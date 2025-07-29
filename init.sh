@@ -3,7 +3,7 @@
 # SPDX-LICENSE-IDENTIFIER: GPL2.0
 # (C) All rights reserved. Author: <kisfg@hotmail.com> in 2025
 # Created at 2025年07月06日 星期日 18时04分20秒
-# Last modified at 2025年07月30日 星期三 00时59分30秒
+# Last modified at 2025年07月30日 星期三 01时01分41秒
 set -ex
 
 # github
@@ -20,7 +20,7 @@ mono_zip="$mononame.zip"
 fira_zip="$firaname.zip"
 lxgw_tar="$lxgwname.tar.gz"
 # 有点难办
-sha256_list=("5ecb50e9f5aa644d0aebba93881183f0a7b9aaf829bac9dbadaf348f557e0029" "b9caa260fde3cb5681711f91dbfc2d6ec7ecf2fabbf92cef4432fc19c9a73816" "25d806b8ac55e21cddd3a1fdcbc929d3a232a1cac277ae606158824d803d2d09")
+sha256_list=('5ecb50e9f5aa644d0aebba93881183f0a7b9aaf829bac9dbadaf348f557e0029' 'b9caa260fde3cb5681711f91dbfc2d6ec7ecf2fabbf92cef4432fc19c9a73816' '25d806b8ac55e21cddd3a1fdcbc929d3a232a1cac277ae606158824d803d2d09')
 
 # 本地配置
 vimdir="$HOME/.vim"
