@@ -3,7 +3,7 @@
 # SPDX-LICENSE-IDENTIFIER: GPL2.0
 # (C) All rights reserved. Author: <kisfg@hotmail.com> in 2025
 # Created at 2025年07月06日 星期日 18时04分20秒
-# Last modified at 2025年07月30日 星期三 01时19分22秒
+# Last modified at 2025年07月30日 星期三 01时23分07秒
 set -e
 
 # github
@@ -96,14 +96,13 @@ function get_fonts() {
 	firacode="$url_prefix/tonsky/FiraCode/$release_path/6.2/$fira_zip"
 	lxgw="$url_prefix/lxgw/LxgwWenkai/$release_path/v1.520/$lxgw_tar"
 	curr_dir=`pwd`
-	mkdir -p "$fonts_dir"
-	cd "$fonts_dir"
+	mkdir -p "$fonts_dir" && cd "$fonts_dir"
 	link_list=("$jetbrain" "$firacode" "$lxgw")
 	"_detect_font" ${link_list[@]}
 	# 拷贝一份到HOME目录
 	# TODO: 早知如此何必当初？
-	mkdir -p "$HOME/.fonts/"
-	cp -r "$fonts_dir*" "$HOME/.fonts/"
+	mkdir -p $HOME/.fonts/
+	cp -r $fonts_dir* $HOME/.fonts/
 	fc-cache -f -v
 	ret=`fc-list | grep -Ei "$lxgwname|$firaname|$mononame"`
 	if [[ "$ret" == '' || "$?" != 0 ]]; then
