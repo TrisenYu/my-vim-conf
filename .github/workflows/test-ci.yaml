@@ -1,5 +1,7 @@
 # TODO: READ hyperlink below.
 # https://stibel.icu/devops/ci/local-repository.html
+# - name: 安装依赖
+#   run: sudo apt-get install zsh
 name: init_sh CI/CD
 
 on: [push]
@@ -15,9 +17,6 @@ jobs:
       - name: 切分支
         uses: actions/checkout@main
 
-      - name: 安装依赖
-        run: sudo apt-get install zsh
-
       - name: 运行 init.sh 并检查是否安装得当
         env:
           payload: ${{ matrix.payload  }}
@@ -27,7 +26,7 @@ jobs:
             echo "invalid inp-file size was detected!"
             exit 1
           fi 
-          zsh init.sh < tmp_inp.txt && rm tmp_inp.txt && \
+          sh init.sh < tmp_inp.txt && rm tmp_inp.txt && \
           cd ~/.vim/ && ls autoload colors fonts/*
           determino=(fira jetbrain lxgw)
           for font in "${determino[@]}"; do

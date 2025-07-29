@@ -1,9 +1,9 @@
-#!/usr/bin/env zsh
+#!/usr/bin/env sh
 # -*- coding: utf-8 -*-
 # SPDX-LICENSE-IDENTIFIER: GPL2.0
 # (C) All rights reserved. Author: <kisfg@hotmail.com> in 2025
 # Created at 2025年07月06日 星期日 18时04分20秒
-# Last modified at 2025年07月30日 星期三 00时48分15秒
+# Last modified at 2025年07月30日 星期三 00时56分56秒
 set -ex
 
 # github
@@ -19,11 +19,6 @@ lxgwname="lxgw-wenkai-v1.520"
 mono_zip="$mononame.zip"
 fira_zip="$firaname.zip"
 lxgw_tar="$lxgwname.tar.gz"
-tar_list=(
-	"$mono_zip"
-	"$fira_zip"
-	"$lxgw_tar"
-)
 sha256_list=(
 	# 有点难办
 	"5ecb50e9f5aa644d0aebba93881183f0a7b9aaf829bac9dbadaf348f557e0029"
@@ -87,19 +82,20 @@ function _detect_font() {
 	font_urls=($@)
 	# TODO: 其实可以全部用 unzip 的
 	fontname_list=("$mononame" "$firaname" "$lxgwname")
-	op_list=("unzip" "unzip" "tar -xf")
+	op_list=('unzip' 'unzip' 'tar -xf')
+	tar_list=("$mono_zip" "$fira_zip" "$lxgw_tar")
 	for ((i=0; i<${#font_urls[@]}; i++)); do
 		if [[ ${fontname_list[i]} != '' &&  -d "./${fontname_list[i]}" ]]; then
-			ret=`tar -c "${fontname_list[i]}" | sha256sum | awk -F' ' ' { print $1 } '`
+			ret=`tar -c ${fontname_list[i]} | sha256sum | awk -F' ' ' { print $1 } '`
 			# 文件有而且齐全
-			[[ "$ret" == "${sha256_list[i]}" ]] && continue
-		elif [[ -f "${tar_list[i]}" ]]; then
+			[[ "$ret" == ${sha256_list[i]} ]] && continue
+		elif [[ -f ${tar_list[i]} ]]; then
 			# 不存在但有tar/zip
-			${op_list[i]} ${tar_list[i]} && rm "${tar_list[i]}"
+			${op_list[i]} ${tar_list[i]} && rm ${tar_list[i]}
 			continue
 		fi
-		wget "${font_urls[i]}"
-		${op_list[i]} ${tar_list[i]} && rm "${tar_list[i]}"
+		wget ${font_urls[i]}
+		${op_list[i]} ${tar_list[i]} && rm ${tar_list[i]}
 	done
 }
 
