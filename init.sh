@@ -3,8 +3,8 @@
 # SPDX-LICENSE-IDENTIFIER: GPL2.0
 # (C) All rights reserved. Author: <kisfg@hotmail.com> in 2025
 # Created at 2025年07月06日 星期日 18时04分20秒
-# Last modified at 2025年07月30日 星期三 00时10分57秒
-set -e
+# Last modified at 2025年07月30日 星期三 00时23分00秒
+set -ex
 
 # github
 raw_github='https://raw.githubusercontent.com'
@@ -16,17 +16,17 @@ mononame="JetBrainsMono-2.304"
 firaname="Fira_Code_v6.2"
 lxgwname="lxgw-wenkai-v1.520"
 # 这两个只有 zip
-mono_tar="$mononame.zip"
+mono_zip="$mononame.zip"
 fira_zip="$firaname.zip"
-lxgw_zip="$lxgwname.tar.gz"
+lxgw_tar="$lxgwname.tar.gz"
 fontname_list=(
 	"$mononame"
 	"$firaname"
 	"$lxgwname"
 )
 tar_list=(
-	"$mono_tar"
-	"$fira_tar"
+	"$mono_zip"
+	"$fira_zip"
 	"$lxgw_tar"
 )
 sha256_list=(
@@ -96,18 +96,18 @@ function _detect_font() {
 		"unzip"
 		"tar -xf"
 	)
-	for ((i=0; i<="${#fontname_list[@]}"; i++)); do
-		if [ -d ${fontname_list[i]} ]; then
-			ret=`tar -c "${fontname_list[i]}" | sha256sum | awk -F' ' ' { print $1 } '`
+	for ((i=0; i<="${#font_urls[@]}"; i++)); do
+		if [ -d ${fontname_list[$i]} ]; then
+			ret=`tar -c "${fontname_list[$i]}" | sha256sum | awk -F' ' ' { print $1 } '`
 			# 文件有而且齐全
-			[[ "$ret" == "${sha256_list[i]}" ]] && continue
-		elif [ -f ${tar_list[i]} ]; then
+			[[ "$ret" == "${sha256_list[$i]}" ]] && continue
+		elif [ -f ${tar_list[$i]} ]; then
 			# 不存在但有tar/zip
-			${op_list[i]} ${tar_list[i]} && rm "${tar_list[i]}"
+			${op_list[$i]} ${tar_list[$i]} && rm "${tar_list[$i]}"
 			continue
 		fi
-		wget "${font_urls[i]}"
-		${op_list[i]} ${tar_list[i]} && rm "${tar_list[i]}"
+		wget "${font_urls[$i]}"
+		${op_list[$i]} ${tar_list[$i]} && rm "${tar_list[$i]}"
 	done
 }
 
@@ -141,6 +141,7 @@ function get_plug_manager() {
 		 "$raw_github/junegunn/vim-plug/baa66bcf349a6f6c125b0b2b63c112662b0669e1/plug.vim"
 	[[ "$res" == '' ]] && return
 	# 需要备份plugman，防止意外
+	# 后面自己删
 	cp "$plugman" "$plugman.backup"
 	# 注意下面的引号
 	# \ '^https://git::@github\.com', 'https://wget.la/https://github.com', '')
