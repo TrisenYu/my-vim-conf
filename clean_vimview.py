@@ -3,7 +3,7 @@
 # SPDX-LICENSE-IDENTIFIER: GPL2.0
 # (C) All rights reserved. Author: <kisfg@hotmail.com> in 2025
 # Created at 2025年07月22日 星期二 17时15分40秒
-# Last modified at 2025年07月29日 星期二 17时38分33秒
+# Last modified at 2025年07月30日 星期三 00时32分08秒
 from datetime import datetime
 import os
 
@@ -39,4 +39,5 @@ if __name__ == '__main__':
     )
     vargs = vparser.parse_args()
 
+    print(os.getcwd())
     clean_views(vargs.remove_all)

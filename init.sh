@@ -3,7 +3,7 @@
 # SPDX-LICENSE-IDENTIFIER: GPL2.0
 # (C) All rights reserved. Author: <kisfg@hotmail.com> in 2025
 # Created at 2025年07月06日 星期日 18时04分20秒
-# Last modified at 2025年07月30日 星期三 00时23分00秒
+# Last modified at 2025年07月30日 星期三 00时31分22秒
 set -ex
 
 # github
@@ -19,11 +19,6 @@ lxgwname="lxgw-wenkai-v1.520"
 mono_zip="$mononame.zip"
 fira_zip="$firaname.zip"
 lxgw_tar="$lxgwname.tar.gz"
-fontname_list=(
-	"$mononame"
-	"$firaname"
-	"$lxgwname"
-)
 tar_list=(
 	"$mono_zip"
 	"$fira_zip"
@@ -88,6 +83,11 @@ function alter_src_via_mirror() {
 }
 
 # 入参:  压缩包名称 url
+fontname_list=(
+	"$mononame"
+	"$firaname"
+	"$lxgwname"
+)
 function _detect_font() {
 	font_urls=($@)
 	# TODO: 其实可以全部用 unzip 的
@@ -97,11 +97,11 @@ function _detect_font() {
 		"tar -xf"
 	)
 	for ((i=0; i<="${#font_urls[@]}"; i++)); do
-		if [ -d ${fontname_list[$i]} ]; then
+		if [[ -d "./${fontname_list[$i]}" ]]; then
 			ret=`tar -c "${fontname_list[$i]}" | sha256sum | awk -F' ' ' { print $1 } '`
 			# 文件有而且齐全
 			[[ "$ret" == "${sha256_list[$i]}" ]] && continue
-		elif [ -f ${tar_list[$i]} ]; then
+		elif [[ -f "${tar_list[$i]}" ]]; then
 			# 不存在但有tar/zip
 			${op_list[$i]} ${tar_list[$i]} && rm "${tar_list[$i]}"
 			continue
@@ -113,8 +113,8 @@ function _detect_font() {
 
 function get_fonts() {
 	# TODO: 如果能在这里换最新的字体也不错
-	jetbrain="$url_prefix/JetBrains/JetBrainsMono/$release_path/v2.304/$mono_tar"
-	firacode="$url_prefix/tonsky/FiraCode/$release_path/6.2/$fira_tar"
+	jetbrain="$url_prefix/JetBrains/JetBrainsMono/$release_path/v2.304/$mono_zip"
+	firacode="$url_prefix/tonsky/FiraCode/$release_path/6.2/$fira_zip"
 	lxgw="$url_prefix/lxgw/LxgwWenkai/$release_path/v1.520/$lxgw_tar"
 	curr_dir=`pwd`
 	mkdir -p "$fonts_dir"
