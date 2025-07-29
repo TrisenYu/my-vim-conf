@@ -3,7 +3,7 @@
 # SPDX-LICENSE-IDENTIFIER: GPL2.0
 # (C) All rights reserved. Author: <kisfg@hotmail.com> in 2025
 # Created at 2025年07月06日 星期日 18时04分20秒
-# Last modified at 2025年07月25日 星期五 18时02分38秒
+# Last modified at 2025年07月29日 星期二 22时38分14秒
 set -e
 
 # github
@@ -12,9 +12,27 @@ main_github='https://github.com'
 release_path='releases/download'
 
 # 字体包名称
-mono_zip="JetBrainsMono-2.304.zip"
-fira_zip="Fira_Code_v6.2.zip"
-lxgw_zip="lxgw-wenkai-v1.520.zip"
+mononame="JetBrainsMono-2.304"
+firaname="Fira_Code_v6.2"
+lxgwname="lxgw-wenkai-v1.520"
+mono_tar="$mononame.tar.gz"
+fira_tar="$firaname.tar.gz"
+lxgw_tar="$lxgwname.tar.gz"
+fontname_list=(
+	"$mononame"
+	"$firaname"
+	"$lxgwname"
+)
+tar_list=(
+	"$mono_tar"
+	"$fira_tar"
+	"$lxgw_tar"
+)
+sha256_list=(
+	"5ecb50e9f5aa644d0aebba93881183f0a7b9aaf829bac9dbadaf348f557e0029"
+	"b9caa260fde3cb5681711f91dbfc2d6ec7ecf2fabbf92cef4432fc19c9a73816"
+	"25d806b8ac55e21cddd3a1fdcbc929d3a232a1cac277ae606158824d803d2d09"
+)
 
 # 本地配置
 vimdir="$HOME/.vim"
@@ -25,21 +43,20 @@ fonts_dir="$vimdir/fonts/"
 
 url_prefix="$main_github"
 # TODO: 如何获取镜像主机名单？
-famous_servers=(
+famous_mirrors=(
 	'wget.la'
 	'gh-proxy.com'
 	'gh.xmly.dev'
+	'gh.llkk.cc'
 )
 main_mirror=''
-
-
 
 # ping 所有给定的镜像站，取时长最小的一个
 function _probe() {
 	rtt=()
 	declare -A rtt_dict
 	rtt_dict=()
-	for cur_mirror in ${famous_servers[@]}; do
+	for cur_mirror in ${famous_mirrors[@]}; do
 		rtt_val=`ping -c 2 $cur_mirror  | grep '^rtt' | awk -F'/' '{ print $6 }'`
 		rtt+=($rtt_val)
 		rtt_dict["$rtt_val"]="$cur_mirror"
@@ -62,41 +79,47 @@ function alter_src_via_mirror() {
 	fi
 
 	"_probe"
+	# 在这里设置是否需要镜像源
 	res="https://$main_mirror"
 	url_prefix="$res/$main_github"
 	raw_github="$res/$raw_github"
 }
 
-# 入参: 字体文件夹名称 压缩包名称 url
+# 入参:  压缩包名称 url
 function _detect_font() {
-	fira_code_zip_sha256="0949915ba8eb24d89fd93d10a7ff623f42830d7c5ffc3ecbf960e4ecad3e3e79"
-	mono_zip_sha256="6f6376c6ed2960ea8a963cd7387ec9d76e3f629125bc33d1fdcd7eb7012f7bbf"
-	# TODO: 关键在于怎么根据已有的文件来计算匹配这些哈希
-	#		有具体的文件也不下载，直接退出
-	cd "$1"
-	ls "./$2"
-	if [[ $? != 0 ]]; then
-		wget "$3"
-	fi
-	unzip "$mono_zip" && rm "$mono_zip"
-	cd ..
+	font_urls=($@)
+	for ((i=0; i<="${#fontname_list[@]}"; i++)); do
+		if [ -d ${fontname_list[i]} ]; then
+			ret=`tar -c "${fontname_list[i]}" | sha256sum | awk -F' ' ' { print $1 } '`
+			# 文件有而且齐全
+			[[ "$ret" == "${sha256_list[i]}" ]] && continue
+		elif [ -f ${tar_list[i]} ]; then
+			# 不存在但有tar
+			tar -xf "${tar_list[i]}" && rm "${tar_list[i]}"
+			continue
+		fi
+		wget "${font_urls[i]}" && tar -xf "${tar_list[i]}" && rm "${tar_list[i]}"
+	done
 }
 
 function get_fonts() {
 	# TODO: 如果能在这里换最新的字体也不错
-	jetbrain="$url_prefix/JetBrains/JetBrainsMono/$release_path/v2.304/$mono_zip"
-	firacode="$url_prefix/tonsky/FiraCode/$release_path/6.2/$fira_zip"
-	lxgw="$url_prefix/lxgw/LxgwWenkai/$release_path/v1.520/$lxgw_zip"
+	jetbrain="$url_prefix/JetBrains/JetBrainsMono/$release_path/v2.304/$mono_tar"
+	firacode="$url_prefix/tonsky/FiraCode/$release_path/6.2/$fira_tar"
+	lxgw="$url_prefix/lxgw/LxgwWenkai/$release_path/v1.520/$lxgw_tar"
 	curr_dir=`pwd`
 	mkdir -p "$fonts_dir"
-	cd "$fonts_dir" && mkdir -p 'JetBrains' 'FiraCode' 'lxgw'
-	# TODO: 更改为_detect_font() 函数
-	cd 'JetBrains' && wget "$jetbrain" && unzip "$mono_zip" && rm "$mono_zip" && cd ..
-	cd 'FiraCode' && wget "$firacode" && unzip "$fira_zip" && rm "$fira_zip" && cd ..
-	cd 'lxgw' && wget "$lxgw" && unzip "$lxgw_zip" && rm "$lxgw_zip" && cd ..
-	# 最后刷新字体
-	fc-cache -fv # | tee -a './tmp.log'
-	cd "$curr_dir"
+	cd "$fonts_dir"
+	link_list=(jetbrain firacode lxgw)
+	"_detect_font" "$link_list"
+	fc-cache -fv
+	ret=`fc-list | grep -Ei "$lxgwname|$firaname|$mononame"`
+	if [[ "$ret" == '' || "$?" != 0]]; then
+		echo "it seems that shell script can not fetch fonts properly..."
+		exit 1
+	fi
+	cd ..
+	echo "$ret"
 }
 
 function get_color_scheme() {
@@ -104,17 +127,15 @@ function get_color_scheme() {
 	wget "$raw_github/morhetz/gruvbox/master/colors/gruvbox.vim" -O "$color_path/gruvbox.vim"
 }
 
-
 function get_plug_manager() {
 	curl -fLo "$plugman" --create-dirs \
 		 "$raw_github/junegunn/vim-plug/baa66bcf349a6f6c125b0b2b63c112662b0669e1/plug.vim"
-	if [[ "$res" != '' ]]; then
-		# 需要备份plugman，防止意外
-		cp "$plugman" "$plugman.backup"
-		# 注意下面的引号
-		# \ '^https://git::@github\.com', 'https://wget.la/https://github.com', '')
-		sed -i "s#'$main_github#'$res#g" "$plugman"
-	fi
+	[[ "$res" == '' ]] && return
+	# 需要备份plugman，防止意外
+	cp "$plugman" "$plugman.backup"
+	# 注意下面的引号
+	# \ '^https://git::@github\.com', 'https://wget.la/https://github.com', '')
+	sed -i "s#'$main_github#'$res#g" "$plugman"
 }
 
 

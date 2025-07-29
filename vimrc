@@ -10,6 +10,7 @@ call plug#begin()
 	Plug 'cohama/lexima.vim'					" 自动闭合括号
 	Plug 'rust-lang/rust.vim'
 	Plug 'preservim/tagbar'						" 层级目录显示
+	Plug 'boydos/emmet-vim'
 call plug#end()
 
 let g:ycm_semantic_triggers = {
@@ -30,6 +31,7 @@ let g:ycm_filetype_whitelist = {
 	\ "cpp": 1,
 	\ "hpp": 1,
 	\ "cc": 1,
+	\ "cu": 1,
 	\ "h": 1,
 	\ "lua": 1,
 	\ "python": 1,
@@ -69,6 +71,11 @@ let g:NERDTreeWinSize			 = 16		" 侧边栏大小
 
 let g:indent_guides_enable_on_vim_startup = 1
 
+let g:user_emmet_install_global = 0
+let g:user_emmet_expandabbr_key = '<C-e>'
+
+
+autocmd FileType html,css,xml EmmetInstall
 
 " vimscript 要求函数名首字母大写
 func Config_NerdTree()
@@ -81,11 +88,11 @@ func Ret_to_last_pos()
 	if line("'\"") <= 0
 		return
 	endif
-	if line("'\"") <= line("$")
-		exec "norm '\""
-	else
-		exec "norm $"
+	let ch="'\""
+	if line("'\"") > line("$")
+		let ch = "$"
 	endif
+	exec "norm ".ch
 endfunc
 
 
@@ -103,6 +110,8 @@ func Get_sign()
 	endfor
 	if &filetype == 'lua'
 		return '-- '
+	elseif (&filetype == 'xml' || &filetype == 'html')
+		return "<--! "
 	elseif &filetype != 'rust'
 		return '/// '
 	else
@@ -111,46 +120,45 @@ func Get_sign()
 endfunc
 
 func Pad_header()
-	let license = "SPDX-LICENSE-IDENTIFIER: GPL2.0\n"
-	let header_comment = ''
-	let sign = Get_sign()
-	let tail = ''
+	let license = "SPDX-LICENSE-IDENTIFIER: GPL2.0"
+	let [header_comment, sign] = ['', Get_sign()]
+	let [addt, cloz, br, ebr] = ['', '', '<', '>']
 
 	" 难以吐槽这个python
 	if (&filetype == 'sh' || &filetype == 'zsh' || &filetype == 'python')
 		let header_comment .= "#!/usr/bin/env ".&filetype."\n"
 		let header_comment .= "# -*- coding: utf-8 -*-"."\n"
+	elseif (&filetype == 'xml' || &filetype == 'html')
+		let cloz = " -->"
+		let br = '{'
+		let ebr = '}'
 	else
-		let tail = sign."\n"
+		let addt = sign."\n"
 	endif
 
-	let header_comment .= sign.license.tail
+	let header_comment .= sign.license.cloz."\n".addt
 	let header_comment .= sign."(C) All rights reserved. "
-	let header_comment .= "Author: <kisfg@hotmail.com> in ".strftime("%Y")."\n"
-	let header_comment .= sign."Created at ".strftime("%c")."\n"
-	let header_comment .= sign."Last modified at ".strftime("%c")."\n"
+	let header_comment .= "Author: ".br."kisfg@hotmail.com".ebr." in ".strftime("%Y").cloz."\n"
+	let header_comment .= sign."Created at ".strftime("%c").cloz."\n"
+	let header_comment .= sign."Last modified at ".strftime("%c").cloz."\n"
 	exec "normal i".header_comment | exec "normal G"
 endfunc
 
 func Update_info() 
-	let sign = Get_sign()
-	let payload = strftime("%c")
-	let prefix = 'Last modified at '
+	let [sign, payload, prefix] = [Get_sign(), strftime("%c"), 'Last modified at ']
 	let exam = sign.prefix.'.*'
 	let repl = sign.prefix.payload
-	let st = 0
-	let ed = 8
-	let flag = 0
+	let [st, ed, flag] = [0, 8, 0]
 	while st < ed
-		let linum = getline(st)
-		let test = match(linum, exam)
-		if (test != -1)
-			let res = substitute(linum, exam, repl, '')
-			call setline(st, res) 
-			let flag = 1
-			break
+		let [linum, test] = [getline(st), match(linum, exam)]
+		if (test == -1)
+			let st = st + 1
+			continue
 		endif
-		let st = st + 1
+		let res = substitute(linum, exam, repl, '')
+		call setline(st, res) 
+		let flag = 1
+		break
 	endwhile
 
 	if (flag == 0)
@@ -161,8 +169,8 @@ func Update_info()
 	silent! %s/\s\+$//ge
 endfunc
 
-autocmd BufNewFile *.{cc,java,lua,[ch]pp,[ch],[hs]h,py,go,[jrt]s},makefile,CMakeLists.txt exec "call Pad_header()"
-autocmd BufWritePre,filewritepre *.{cc,java,lua,[ch]pp,[ch],[hs]h,py,go,[jrt]s},makefile,CMakeLists.txt exec "call Update_info()"
+autocmd BufNewFile *.{c[cu],java,lua,[ch]pp,[ch],[hs]h,py,go,[jrt]s,html\=,xml},makefile,CMakeLists.txt exec "call Pad_header()"
+autocmd BufWritePre,filewritepre *.{c[cu],java,lua,[ch]pp,[ch],[hs]h,py,go,[jrt]s,html\=,xml},makefile,CMakeLists.txt exec "call Update_info()"
 """ 自动命令配置
 " TODO: 检查插件是否存在，如果不存在则安装
 
@@ -172,14 +180,13 @@ autocmd BufEnter * exec "call Config_NerdTree()"
 " 返回上一次对该文件的编辑位置
 autocmd BufReadPost * exec "call Ret_to_last_pos()"
 " 不会自动增加注释
+" TODO: 不过有时候也挺麻烦的，还是用一个键位来控制这个的使能吧
 autocmd Filetype * setlocal formatoptions-=c formatoptions-=r formatoptions-=o
-autocmd BufWritePre,filewritepre *.{cc,java,lua,[ch]pp,[ch],[hs]h,py,go,[jrt]s},makefile,CMakeLists.txt silent mkview
-autocmd BufEnter *.{cc,java,lua,[ch]pp,[ch],[hs]h,py,go,[jrt]s},makefile,CMakeLists.txt silent loadview
-
+autocmd BufWritePre,fileWritePre *.{c[cu],java,lua,[ch]pp,[ch],[hs]h,py,go,[jrt]s,html\=,xml},makefile,CMakeLists.txt silent mkview
+autocmd BufWinEnter *.{c[cu],java,lua,[ch]pp,[ch],[hs]h,py,go,[jrt]s,html\=,xml},makefile,CMakeLists.txt silent loadview
 " 这里来主动删掉
-" TODO: 如果这里没有python怎么办？
-" 
-autocmd BufWritePre vimrc silent exec "!python clean_vimview.py -ra true"
+autocmd BufWritePre vimrc silent exec "!python ~/.vim/clean_vimview.py -ra true"
+
 
 
 "" 其它内置的配置选项
@@ -189,7 +196,7 @@ filetype indent on
 
 " ctrl+A 为全选
 map <C-A> ggVGY
-map <silent> <C-e> :NERDTreeToggle<CR>
+map <silent> <C-&> :NERDTreeToggle<CR>
 nmap <F8> :TagbarToggle<CR>
 
 colorscheme gruvbox
@@ -234,7 +241,8 @@ set nostartofline
 
 set smartcase
 set incsearch
-set hlsearch
+" 高亮一直显示
+" set hlsearch
 " set nowrap " 不自动折行
 set linebreak " 遇到特殊符号才折行
 syntax enable
@@ -269,7 +277,13 @@ set textwidth=256
 
 set selectmode=mouse,key
 set t_Co=256 " 二百五十六色支持
-set guifont=Fira\ Code\ Medium\ 12,JetBrains\ Mono\ Medium\ 12
+
+if has("gui_gtk2")
+	set guifont=Fira\ Code\ Medium\ 12,JetBrains\ Mono\ Medium\ 12
+elseif (has("gui_macvim") || has("gui_win32"))
+	set guifont=Fira_Code_Medium:h12,JetBrains_Mono_Medium:h12
+endif
+	
 
 set cursorline
 highlight CursorLine guibg=lightgrey

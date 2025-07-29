@@ -28,6 +28,10 @@ jobs:
           fi 
           zsh init.sh < tmp_inp.txt && rm tmp_inp.txt && \
           cd ~/.vim/ && ls autoload colors fonts/*
+          determino=(fira jetbrain lxgw)
+          for font in "${determino[@]}"; do
+            fc-list | grep -i "$font" 
+          done
 
   python-remove-test:
     runs-on: ubuntu-latest
