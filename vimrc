@@ -150,7 +150,8 @@ func Update_info()
 	let repl = sign.prefix.payload
 	let [st, ed, flag] = [0, 8, 0]
 	while st < ed
-		let [linum, test] = [getline(st), match(linum, exam)]
+		let linum = getline(st)
+		let test = match(linum, exam)
 		if (test == -1)
 			let st = st + 1
 			continue

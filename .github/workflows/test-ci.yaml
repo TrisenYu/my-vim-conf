@@ -44,7 +44,7 @@ jobs:
         # TODO: 后面应该改成 vimrc 内调用 python 来清理view文件夹下的内容才行
         run: |
           test_files=(a b c d e f g)
-          mkdir -p view && cd view 
+          mkdir -p ~/.vim/view && cd ~/.vim/view 
           for file in "${test_files[@]}"; do
             echo "123" > file
             touch -t 202001011145 file 

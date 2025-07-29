@@ -114,7 +114,7 @@ function get_fonts() {
 	"_detect_font" "$link_list"
 	fc-cache -fv
 	ret=`fc-list | grep -Ei "$lxgwname|$firaname|$mononame"`
-	if [[ "$ret" == '' || "$?" != 0]]; then
+	if [[ "$ret" == '' || "$?" != 0 ]]; then
 		echo "it seems that shell script can not fetch fonts properly..."
 		exit 1
 	fi
