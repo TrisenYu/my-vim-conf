@@ -3,7 +3,7 @@
 # SPDX-LICENSE-IDENTIFIER: GPL2.0
 # (C) All rights reserved. Author: <kisfg@hotmail.com> in 2025
 # Created at 2025年07月06日 星期日 18时04分20秒
-# Last modified at 2025年07月30日 星期三 00时56分56秒
+# Last modified at 2025年07月30日 星期三 00时59分30秒
 set -ex
 
 # github
@@ -19,12 +19,8 @@ lxgwname="lxgw-wenkai-v1.520"
 mono_zip="$mononame.zip"
 fira_zip="$firaname.zip"
 lxgw_tar="$lxgwname.tar.gz"
-sha256_list=(
-	# 有点难办
-	"5ecb50e9f5aa644d0aebba93881183f0a7b9aaf829bac9dbadaf348f557e0029"
-	"b9caa260fde3cb5681711f91dbfc2d6ec7ecf2fabbf92cef4432fc19c9a73816"
-	"25d806b8ac55e21cddd3a1fdcbc929d3a232a1cac277ae606158824d803d2d09"
-)
+# 有点难办
+sha256_list=("5ecb50e9f5aa644d0aebba93881183f0a7b9aaf829bac9dbadaf348f557e0029" "b9caa260fde3cb5681711f91dbfc2d6ec7ecf2fabbf92cef4432fc19c9a73816" "25d806b8ac55e21cddd3a1fdcbc929d3a232a1cac277ae606158824d803d2d09")
 
 # 本地配置
 vimdir="$HOME/.vim"
@@ -35,12 +31,7 @@ fonts_dir="$vimdir/fonts/"
 
 url_prefix="$main_github"
 # TODO: 如何获取镜像主机名单？
-famous_mirrors=(
-	'wget.la'
-	'gh-proxy.com'
-	'gh.xmly.dev'
-	'gh.llkk.cc'
-)
+famous_mirrors=('wget.la' 'gh-proxy.com' 'gh.xmly.dev' 'gh.llkk.cc')
 main_mirror=''
 
 # ping 所有给定的镜像站，取时长最小的一个
