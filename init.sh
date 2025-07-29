@@ -3,7 +3,7 @@
 # SPDX-LICENSE-IDENTIFIER: GPL2.0
 # (C) All rights reserved. Author: <kisfg@hotmail.com> in 2025
 # Created at 2025年07月06日 星期日 18时04分20秒
-# Last modified at 2025年07月29日 星期二 23时46分05秒
+# Last modified at 2025年07月29日 星期二 23时49分43秒
 set -e
 
 # github
@@ -110,12 +110,8 @@ function get_fonts() {
 	curr_dir=`pwd`
 	mkdir -p "$fonts_dir"
 	cd "$fonts_dir"
-	link_list=(
-		"$jetbrain"
-		"$firacode"
-		"$lxgw"
-	)
-	"_detect_font" "$link_list"
+	link_list=("$jetbrain" "$firacode" "$lxgw")
+	"_detect_font" ${link_list[@]}
 	fc-cache -fv
 	ret=`fc-list | grep -Ei "$lxgwname|$firaname|$mononame"`
 	if [[ "$ret" == '' || "$?" != 0 ]]; then
