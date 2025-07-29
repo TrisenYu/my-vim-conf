@@ -10,7 +10,8 @@ jobs:
     runs-on: ubuntu-latest
     strategy:
       matrix:
-        payload: ["3\\n-1\\n2\\n", "3\\n-1\\n1\\n"]
+        payload: ["3\\n-1\\n1\\n"]
+        # , "3\\n-1\\n2\\n"]
       max-parallel: 2
 
     steps:

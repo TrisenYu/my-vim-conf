@@ -3,7 +3,7 @@
 # SPDX-LICENSE-IDENTIFIER: GPL2.0
 # (C) All rights reserved. Author: <kisfg@hotmail.com> in 2025
 # Created at 2025年07月06日 星期日 18时04分20秒
-# Last modified at 2025年07月30日 星期三 01时33分10秒
+# Last modified at 2025年07月30日 星期三 01时36分00秒
 set -e
 
 # github
@@ -40,9 +40,11 @@ function _probe() {
 	declare -A rtt_dict
 	rtt_dict=()
 	for cur_mirror in ${famous_mirrors[@]}; do
-		rtt_val=`ping -c 2 $cur_mirror  | grep '^rtt' | awk -F'/' '{ print $6 }'`
+		mid_rtt_val=`ping -c 2 $cur_mirror`
+		echo $mid_rtt_val
+		rtt_val=`echo $mid_rtt_val | grep '^rtt' | awk -F'/' '{ print $6 }'`
 		rtt+=($rtt_val)
-		if [ -n $rtt_val ]; then
+		if [ -n "$rtt_val" ]; then
 			rtt_dict[$rtt_val]="$cur_mirror"
 		fi
 	done
