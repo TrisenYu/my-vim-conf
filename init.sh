@@ -3,7 +3,7 @@
 # SPDX-LICENSE-IDENTIFIER: GPL2.0
 # (C) All rights reserved. Author: <kisfg@hotmail.com> in 2025
 # Created at 2025年07月06日 星期日 18时04分20秒
-# Last modified at 2025年07月30日 星期三 00时42分32秒
+# Last modified at 2025年07月30日 星期三 00时48分15秒
 set -ex
 
 # github
@@ -88,8 +88,8 @@ function _detect_font() {
 	# TODO: 其实可以全部用 unzip 的
 	fontname_list=("$mononame" "$firaname" "$lxgwname")
 	op_list=("unzip" "unzip" "tar -xf")
-	for ((i=0; i<"${#font_urls[@]}"; i++)); do
-		if [[ -d "./${fontname_list[i]}" ]]; then
+	for ((i=0; i<${#font_urls[@]}; i++)); do
+		if [[ ${fontname_list[i]} != '' &&  -d "./${fontname_list[i]}" ]]; then
 			ret=`tar -c "${fontname_list[i]}" | sha256sum | awk -F' ' ' { print $1 } '`
 			# 文件有而且齐全
 			[[ "$ret" == "${sha256_list[i]}" ]] && continue

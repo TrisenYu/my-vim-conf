@@ -46,7 +46,7 @@ jobs:
         # cp clean_vimview.py ~/.vim/
         run: |
           test_files=(a b c d e f g)
-          vimview="~/.vim/view"
+          vimview="$HOME/.vim/view"
           mkdir -p "$vimview" 
           readlink -f "$vimview"
           for file in "${test_files[@]}"; do
