@@ -3,8 +3,8 @@
 # SPDX-LICENSE-IDENTIFIER: GPL2.0
 # (C) All rights reserved. Author: <kisfg@hotmail.com> in 2025
 # Created at 2025年07月06日 星期日 18时04分20秒
-# Last modified at 2025年07月30日 星期三 01时01分41秒
-set -ex
+# Last modified at 2025年07月30日 星期三 01时14分22秒
+set -e
 
 # github
 raw_github='https://raw.githubusercontent.com'
@@ -100,7 +100,12 @@ function get_fonts() {
 	cd "$fonts_dir"
 	link_list=("$jetbrain" "$firacode" "$lxgw")
 	"_detect_font" ${link_list[@]}
-	fc-cache -fv
+	# 拷贝一份到HOME目录
+	# TODO: 早知如此何必当初？
+	# mkdir -p "$HOME/.fonts/"
+	# cp -r "$fonts_dir/*" "$HOME/.fonts/"
+	fc-cache "$fonts_dir"
+	fc-cache -f -v
 	ret=`fc-list | grep -Ei "$lxgwname|$firaname|$mononame"`
 	if [[ "$ret" == '' || "$?" != 0 ]]; then
 		echo "it seems that shell script can not fetch fonts properly..."

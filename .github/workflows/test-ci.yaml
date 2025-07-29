@@ -26,6 +26,7 @@ jobs:
             echo "invalid inp-file size was detected!"
             exit 1
           fi 
+          sed -i 's/set -e/set -ex/g' init.sh
           bash init.sh < tmp_inp.txt && rm tmp_inp.txt && \
           cd ~/.vim/ && ls autoload colors fonts/*
           determino=(fira jetbrain lxgw)
