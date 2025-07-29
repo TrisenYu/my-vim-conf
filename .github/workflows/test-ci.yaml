@@ -48,6 +48,7 @@ jobs:
           test_files=(a b c d e f g)
           vimview="~/.vim/view"
           mkdir -p "$vimview" 
+          readlink -f "$vimview"
           for file in "${test_files[@]}"; do
             echo "123" > "$vimview/$file"
             touch -t 202001011145 "$vimview/$file"

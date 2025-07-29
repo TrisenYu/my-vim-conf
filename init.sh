@@ -3,7 +3,7 @@
 # SPDX-LICENSE-IDENTIFIER: GPL2.0
 # (C) All rights reserved. Author: <kisfg@hotmail.com> in 2025
 # Created at 2025年07月06日 星期日 18时04分20秒
-# Last modified at 2025年07月30日 星期三 00时31分22秒
+# Last modified at 2025年07月30日 星期三 00时42分32秒
 set -ex
 
 # github
@@ -83,31 +83,23 @@ function alter_src_via_mirror() {
 }
 
 # 入参:  压缩包名称 url
-fontname_list=(
-	"$mononame"
-	"$firaname"
-	"$lxgwname"
-)
 function _detect_font() {
 	font_urls=($@)
 	# TODO: 其实可以全部用 unzip 的
-	op_list=(
-		"unzip"
-		"unzip"
-		"tar -xf"
-	)
-	for ((i=0; i<="${#font_urls[@]}"; i++)); do
-		if [[ -d "./${fontname_list[$i]}" ]]; then
-			ret=`tar -c "${fontname_list[$i]}" | sha256sum | awk -F' ' ' { print $1 } '`
+	fontname_list=("$mononame" "$firaname" "$lxgwname")
+	op_list=("unzip" "unzip" "tar -xf")
+	for ((i=0; i<"${#font_urls[@]}"; i++)); do
+		if [[ -d "./${fontname_list[i]}" ]]; then
+			ret=`tar -c "${fontname_list[i]}" | sha256sum | awk -F' ' ' { print $1 } '`
 			# 文件有而且齐全
-			[[ "$ret" == "${sha256_list[$i]}" ]] && continue
-		elif [[ -f "${tar_list[$i]}" ]]; then
+			[[ "$ret" == "${sha256_list[i]}" ]] && continue
+		elif [[ -f "${tar_list[i]}" ]]; then
 			# 不存在但有tar/zip
-			${op_list[$i]} ${tar_list[$i]} && rm "${tar_list[$i]}"
+			${op_list[i]} ${tar_list[i]} && rm "${tar_list[i]}"
 			continue
 		fi
-		wget "${font_urls[$i]}"
-		${op_list[$i]} ${tar_list[$i]} && rm "${tar_list[$i]}"
+		wget "${font_urls[i]}"
+		${op_list[i]} ${tar_list[i]} && rm "${tar_list[i]}"
 	done
 }
 
