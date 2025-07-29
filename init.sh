@@ -3,7 +3,7 @@
 # SPDX-LICENSE-IDENTIFIER: GPL2.0
 # (C) All rights reserved. Author: <kisfg@hotmail.com> in 2025
 # Created at 2025年07月06日 星期日 18时04分20秒
-# Last modified at 2025年07月30日 星期三 01时23分07秒
+# Last modified at 2025年07月30日 星期三 01时33分10秒
 set -e
 
 # github
@@ -42,10 +42,12 @@ function _probe() {
 	for cur_mirror in ${famous_mirrors[@]}; do
 		rtt_val=`ping -c 2 $cur_mirror  | grep '^rtt' | awk -F'/' '{ print $6 }'`
 		rtt+=($rtt_val)
-		rtt_dict["$rtt_val"]="$cur_mirror"
+		if [ -n $rtt_val ]; then
+			rtt_dict[$rtt_val]="$cur_mirror"
+		fi
 	done
 	rtt=`printf "%s\n" ${rtt[@]} | sort -n | head -n 1 | awk -F'\n' '{ print $1 }'`
-	main_mirror=${rtt_dict["$rtt"]}
+	main_mirror=${rtt_dict[$rtt]}
 	unset rtt_dict
 }
 
@@ -99,10 +101,12 @@ function get_fonts() {
 	mkdir -p "$fonts_dir" && cd "$fonts_dir"
 	link_list=("$jetbrain" "$firacode" "$lxgw")
 	"_detect_font" ${link_list[@]}
+
 	# 拷贝一份到HOME目录
 	# TODO: 早知如此何必当初？
 	mkdir -p $HOME/.fonts/
 	cp -r $fonts_dir* $HOME/.fonts/
+
 	fc-cache -f -v
 	ret=`fc-list | grep -Ei "$lxgwname|$firaname|$mononame"`
 	if [[ "$ret" == '' || "$?" != 0 ]]; then
@@ -115,10 +119,12 @@ function get_fonts() {
 
 function get_color_scheme() {
 	mkdir -p "$color_path"
+	# TODO: 加入判断，避免重复下载
 	wget "$raw_github/morhetz/gruvbox/master/colors/gruvbox.vim" -O "$color_path/gruvbox.vim"
 }
 
 function get_plug_manager() {
+	# TODO: 加入判断，避免重复下载
 	curl -fLo "$plugman" --create-dirs \
 		 "$raw_github/junegunn/vim-plug/baa66bcf349a6f6c125b0b2b63c112662b0669e1/plug.vim"
 	[[ "$res" == '' ]] && return
