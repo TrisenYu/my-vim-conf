@@ -3,7 +3,7 @@
 # SPDX-LICENSE-IDENTIFIER: GPL2.0
 # (C) All rights reserved. Author: <kisfg@hotmail.com> in 2025
 # Created at 2025年07月06日 星期日 18时04分20秒
-# Last modified at 2025年07月30日 星期三 00时02分36秒
+# Last modified at 2025年07月30日 星期三 00时10分57秒
 set -e
 
 # github
@@ -103,11 +103,11 @@ function _detect_font() {
 			[[ "$ret" == "${sha256_list[i]}" ]] && continue
 		elif [ -f ${tar_list[i]} ]; then
 			# 不存在但有tar/zip
-			`${op_list[i]} "${tar_list[i]}" && rm "${tar_list[i]}"`
+			${op_list[i]} ${tar_list[i]} && rm "${tar_list[i]}"
 			continue
 		fi
 		wget "${font_urls[i]}"
-		`${op_list[i]} "${tar_list[i]}" && rm "${tar_list[i]}"`
+		${op_list[i]} ${tar_list[i]} && rm "${tar_list[i]}"
 	done
 }
 

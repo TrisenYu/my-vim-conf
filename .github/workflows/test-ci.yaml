@@ -46,10 +46,11 @@ jobs:
         # cp clean_vimview.py ~/.vim/
         run: |
           test_files=(a b c d e f g)
-          mkdir -p ~/.vim/view && cd ~/.vim/view 
-          pwd && ls .. && ls .
+          vimview="~/.vim/view"
+          mkdir -p "$vimview" 
           for file in "${test_files[@]}"; do
-            echo "123" > file
-            touch -t 202001011145 file 
+            echo "123" > "$vimview/$file"
+            touch -t 202001011145 "$vimview/$file"
           done
-          cd .. && python clean_vimview.py && unset test_files && ls view/
+          python clean_vimview.py && unset test_files && ls "$vimview" 
+          unset vimview
