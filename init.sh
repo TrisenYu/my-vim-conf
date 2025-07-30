@@ -3,7 +3,7 @@
 # SPDX-LICENSE-IDENTIFIER: GPL2.0
 # (C) All rights reserved. Author: <kisfg@hotmail.com> in 2025
 # Created at 2025年07月06日 星期日 18时04分20秒
-# Last modified at 2025年07月30日 星期三 16时22分46秒
+# Last modified at 2025年07月30日 星期三 17时03分39秒
 set -u
 
 # github
@@ -22,9 +22,9 @@ fira_zip="$firaname.zip"
 lxgw_zip="$lxgwname.zip"
 # 有点难办
 sha256_list=(
-	'dc196c07ff3079759207d920036575b3320edc866e8c697bb378431955256b04'
-	'7efaf62d9d9ef083e4338d81eec1eec3551c1a1c8f9cd40706015b907c87211e'
-	'f1554c50a2dc2f0eca68447d66d03d36b2db7365ed39f1db7c39c5b40a12ec02'
+	'11d69e8089afe667b610c5fc875412bdeb03d3f5b9198bafca7c7be24c4c144a'
+	'09bb937b1858a9a34e903c846ef83de788eec5aadccecce1cae97a4a96b1e497'
+	'97e66b2e862c120cc5c3998f1983bb97f851aa3cf4d6da0237a68fece6bf862b'
 )
 
 # 本地配置
@@ -52,7 +52,7 @@ function _probe() {
 	for cur_mirror in ${famous_mirrors[@]}; do
 		mid_rtt_val=`ping -c 2 $cur_mirror`
 		echo "$mid_rtt_val"
-		rtt_val=`echo $mid_rtt_val | grep '^rtt' | awk -F'/' '{ print $6 }'`
+		rtt_val=`echo $mid_rtt_val | grep 'rtt min/avg/max/mdev = [0-9\./]\+ ms$' | awk -F'/' '{ print $6 }'`
 		# issue1: ping包比较小就不会携带rtt信息
 		#	例如 2 packets transmited, 0 received, ... , time 1022ms
 		# issue2: ping失败后返回1触发set -e的满足条件，导致整个shellscript挂了
@@ -96,10 +96,11 @@ function _detect_font() {
 	# op_list=('unzip' 'unzip' 'unzip')
 	tar_list=("$mono_zip" "$fira_zip" "$lxgw_zip")
 	for ((i=0; i<${#font_urls[@]}; i++)); do
-		payload="./${fontname_list[i]}"
+		payload="$fonts_dir${fontname_list[i]}/"
 		if [[ -d "$payload" ]]; then
 			# 只要字典序的哈希结果
-			ret=`find "$payload" -type f | xargs sha256sum | awk -F' ' '{ print $1"\n" }' | sha256sum`
+			# 注意这里的printf
+			ret=`find "$payload" -type f | xargs sha256sum | awk -F' ' '{ printf $1"\n" }' | sha256sum`
 			ret=`echo "$ret" | awk -F' ' '{print $1}'`
 			# 文件有而且齐全
 			[[ "$ret" == ${sha256_list[i]} ]] && continue
@@ -161,6 +162,8 @@ function get_plug_manager() {
 # 整个shellscript的入口
 # 剩下就是自己进vim里面:PlugInstall
 "alter_src_via_mirror"
+
+# TODO: 并发下载
 "get_plug_manager"
 "get_color_scheme"
 "get_fonts"

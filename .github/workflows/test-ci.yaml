@@ -43,7 +43,7 @@ jobs:
           python-version: '3.12.9'
       - name: 准备测试文件并测试
         run: |
-          python --version | grep '3.12.9'
+          python --version
           test_files=(a b c d e f g)
           vimview="$HOME/.vim/view"
           mkdir -p "$vimview" 

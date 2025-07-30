@@ -3,7 +3,7 @@
 # SPDX-LICENSE-IDENTIFIER: GPL2.0
 # (C) All rights reserved. Author: <kisfg@hotmail.com> in 2025
 # Created at 2025年07月22日 星期二 17时15分40秒
-# Last modified at 2025年07月30日 星期三 13时26分35秒
+# Last modified at 2025年07月30日 星期三 17时04分40秒
 from datetime import datetime
 import os
 
@@ -27,7 +27,7 @@ def clean_views(rm_all: bool=False) -> None:
 
 
 if __name__ == '__main__':
-    import argparse
+    import argparse, sys
     vparser = argparse.ArgumentParser(
         description="vim-view清理脚本配置帮助",
         allow_abbrev=True
@@ -39,3 +39,4 @@ if __name__ == '__main__':
     )
     vargs = vparser.parse_args()
     clean_views(vargs.remove_all)
+    print(sys.version)
