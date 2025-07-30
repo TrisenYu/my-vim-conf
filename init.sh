@@ -3,7 +3,7 @@
 # SPDX-LICENSE-IDENTIFIER: GPL2.0
 # (C) All rights reserved. Author: <kisfg@hotmail.com> in 2025
 # Created at 2025年07月06日 星期日 18时04分20秒
-# Last modified at 2025年07月30日 星期三 18时29分34秒
+# Last modified at 2025年07月30日 星期三 22时49分59秒
 set -u
 
 # github
@@ -22,6 +22,7 @@ fira_zip="$firaname.zip"
 lxgw_zip="$lxgwname.zip"
 # 有点难办
 sha256_list=(
+	#
 	'b20a708bfe76897bd4ad1e07521c657aca8f6ad0b07c5c13a9436969fb96a6ca'
 	'f80cbcaa8e827d2d0f693cc2188be746caa7d641ac7db6dece1cd49c1eec343a'
 	'f8c8e678ff3856de7bad2f37e896e0811fbc9b282bd74bae7b777226bf090170'
@@ -104,12 +105,17 @@ function _detect_font() {
 		payload="$fonts_dir${fontname_list[i]}/"
 		if [[ -d "$payload" ]]; then
 			# 只要字典序的哈希结果
-			find "$payload" -type f | sort -fun
-			find "$payload" -type f | sort -fun | xargs sha256sum
-			find "$payload" -type f | sort -fun | xargs sha256sum | awk -F' ' '{ printf $1"\n" }'
-
+			echo "---------------------------------"
+			tmp=`find "$payload" -type f | sort -fn`
+			echo "--> $tmp"
+			tmp=`find "$payload" -type f | sort -fn | xargs sha256sum`
+			echo "==> $tmp"
+			tmp=`find "$payload" -type f | sort -fn | xargs sha256sum | awk -F' ' '{ printf $1"\n" }'`
+			echo "~~> $tmp"
+			tmp=`find "$payload" -type f | sort -fn | xargs sha256sum | awk -F' ' '{ printf $1"\n" }' | sha256sum`
+			echo ">>> $tmp"
 			ret=`\
-				find "$payload" -type f | sort -fun | xargs sha256sum | \
+				find "$payload" -type f | sort -fn | xargs sha256sum | \
 				awk -F' ' '{ printf $1"\n" }' | sha256sum | \
 				awk -F' ' '{ print $1 }' \
 			`

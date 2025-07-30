@@ -20,13 +20,13 @@ jobs:
         env:
           payload: ${{ matrix.payload }}
           # 加入重入测试
+          # sed -i 's/set -u/set -ux/g' init.sh
         run: |
           echo -e "$payload" > tmp_inp.txt
           if [[ ! -s tmp_inp.txt ]]; then
             echo "invalid inp-file size was detected!"
             exit 1
           fi 
-          sed -i 's/set -u/set -ux/g' init.sh
           bash init.sh < tmp_inp.txt 
           bash init.sh < tmp_inp.txt && rm tmp_inp.txt
           cur_path=`pwd`
