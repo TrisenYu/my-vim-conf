@@ -22,13 +22,17 @@ jobs:
           # 加入重入测试
           # sed -i 's/set -u/set -ux/g' init.sh
         run: |
+          ver=`sort --version`
+          echo "$ver"
+          unset ver
+          sudo apt-get update && sudo apt-get upgrade 
+          sort --version
           echo -e "$payload" > tmp_inp.txt
           if [[ ! -s tmp_inp.txt ]]; then
             echo "invalid inp-file size was detected!"
             exit 1
           fi 
-          bash init.sh < tmp_inp.txt 
-          bash test.sh
+          bash init.sh < tmp_inp.txt  && bash test.sh
           cur_path=`pwd`
           cd "$HOME/.vim/" && ls autoload colors "$HOME/.fonts/"
           cd "$cur_path" && unset cur_path
