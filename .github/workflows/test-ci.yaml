@@ -39,8 +39,6 @@ jobs:
     steps:
       - name: 切分支并设置python版本
         uses: actions/checkout@main
-        with:
-          python-version: '3.12.9'
       - name: 准备测试文件并测试
         run: |
           python --version

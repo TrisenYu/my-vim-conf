@@ -223,7 +223,7 @@ set title
 
 set showcmd
 set showmode
-
+set ignorecase
 set showmatch
 " 括号高亮的时间设置为1ms
 set matchtime=1

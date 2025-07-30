@@ -3,7 +3,7 @@
 # SPDX-LICENSE-IDENTIFIER: GPL2.0
 # (C) All rights reserved. Author: <kisfg@hotmail.com> in 2025
 # Created at 2025年07月06日 星期日 18时04分20秒
-# Last modified at 2025年07月30日 星期三 17时03分39秒
+# Last modified at 2025年07月30日 星期三 17时24分30秒
 set -u
 
 # github
@@ -22,9 +22,9 @@ fira_zip="$firaname.zip"
 lxgw_zip="$lxgwname.zip"
 # 有点难办
 sha256_list=(
-	'11d69e8089afe667b610c5fc875412bdeb03d3f5b9198bafca7c7be24c4c144a'
-	'09bb937b1858a9a34e903c846ef83de788eec5aadccecce1cae97a4a96b1e497'
-	'97e66b2e862c120cc5c3998f1983bb97f851aa3cf4d6da0237a68fece6bf862b'
+	'b20a708bfe76897bd4ad1e07521c657aca8f6ad0b07c5c13a9436969fb96a6ca'
+	'f80cbcaa8e827d2d0f693cc2188be746caa7d641ac7db6dece1cd49c1eec343a'
+	'f8c8e678ff3856de7bad2f37e896e0811fbc9b282bd74bae7b777226bf090170'
 )
 
 # 本地配置
@@ -80,9 +80,9 @@ function alter_src_via_mirror() {
 		res="" # 这里会影响后面去下 plugman
 		return
 	fi
-
-	"_probe"
 	# 在这里设置是否需要镜像源
+	"_probe"
+	# TODO: 如果全部失败，需要换为源下载方式
 	res="https://$main_mirror"
 	url_prefix="$res/$main_github"
 	raw_github="$res/$raw_github"
@@ -100,8 +100,9 @@ function _detect_font() {
 		if [[ -d "$payload" ]]; then
 			# 只要字典序的哈希结果
 			# 注意这里的printf
-			ret=`find "$payload" -type f | xargs sha256sum | awk -F' ' '{ printf $1"\n" }' | sha256sum`
-			ret=`echo "$ret" | awk -F' ' '{print $1}'`
+			ret=`find "$payload" -type f | sort -n | xargs sha256sum`
+			ret=`echo "$ret" | awk -F' ' '{ printf $1"\n" }' | sha256sum`
+			ret=`echo "$ret" | awk -F' ' '{ print $1 }'`
 			# 文件有而且齐全
 			[[ "$ret" == ${sha256_list[i]} ]] && continue
 		elif [[ -f ${tar_list[i]} ]]; then
