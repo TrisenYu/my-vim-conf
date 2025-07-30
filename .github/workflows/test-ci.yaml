@@ -1,6 +1,6 @@
 # TODO: READ hyperlink below.
 # https://stibel.icu/devops/ci/local-repository.html
-name: CI/CD validator designed for init_sh and clean_vimview.py
+name: CI/CD validator designed for init.sh, test.sh and clean_vimview.py
 
 on: [push]
 jobs:

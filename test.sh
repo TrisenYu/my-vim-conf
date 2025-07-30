@@ -3,7 +3,7 @@
 # SPDX-LICENSE-IDENTIFIER: GPL2.0
 # (C) All rights reserved. Author: <kisfg@hotmail.com> in 2025
 # Created at 2025年07月30日 星期三 22时57分40秒
-# Last modified at 2025年07月30日 星期三 23时10分31秒
+# Last modified at 2025年07月30日 星期三 23时34分29秒
 
 ans=(
 	# find JetBrainsMono-2.304  -type f | sort -f | xargs sha256sum
@@ -105,7 +105,7 @@ target=(
 
 cd "$HOME/.fonts/"
 for ((i=0; i<${#target[@]}; i ++)); do
-	res=`find "${target[i]}" -type f | sort -f | xargs sha256sum`
+	res=`find "${target[i]}" -type f | sort -df | xargs sha256sum`
 	if [[ "$res" != "${ans[i]}" ]]; then
 cat << FAILURE
 	hash-test-failed: $i
