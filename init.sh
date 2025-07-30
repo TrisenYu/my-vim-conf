@@ -3,9 +3,11 @@
 # SPDX-LICENSE-IDENTIFIER: GPL2.0
 # (C) All rights reserved. Author: <kisfg@hotmail.com> in 2025
 # Created at 2025年07月06日 星期日 18时04分20秒
-# Last modified at 2025年07月30日 星期三 23时39分22秒
+# Last modified at 2025年07月31日 星期四 00时26分20秒
+# 我的评价是不如直接编程
 set -u
 
+######################### 常量定义
 # github
 raw_github='https://raw.githubusercontent.com'
 main_github='https://github.com'
@@ -22,7 +24,6 @@ fira_zip="$firaname.zip"
 lxgw_zip="$lxgwname.zip"
 # 有点难办
 sha256_list=(
-	#
 	'b20a708bfe76897bd4ad1e07521c657aca8f6ad0b07c5c13a9436969fb96a6ca'
 	'f80cbcaa8e827d2d0f693cc2188be746caa7d641ac7db6dece1cd49c1eec343a'
 	'f8c8e678ff3856de7bad2f37e896e0811fbc9b282bd74bae7b777226bf090170'
@@ -45,6 +46,7 @@ famous_mirrors=(
 )
 main_mirror=''
 
+########################################################## 函数定义
 # ping 所有给定的镜像站，取时长最小的一个
 function _probe() {
 	rtt=()
@@ -52,7 +54,6 @@ function _probe() {
 	rtt_dict=()
 	for cur_mirror in ${famous_mirrors[@]}; do
 		mid_rtt_val=`ping -c 2 $cur_mirror`
-		echo "$mid_rtt_val"
 		rtt_val=`\
 			echo $mid_rtt_val | grep 'rtt min/avg/max/mdev = [0-9\./]\+ ms$' | \
 			awk -F'/' '{ print $6 }'
@@ -92,7 +93,7 @@ function alter_src_via_mirror() {
 	res="https://$main_mirror"
 	url_prefix="$res/$main_github"
 	raw_github="$res/$raw_github"
-	echo "$res" "$url_prefix" "$raw_github"
+	# echo "$res" "$url_prefix" "$raw_github"
 }
 
 # 入参:  压缩包名称 url
@@ -123,6 +124,7 @@ function _detect_font() {
 		fi
 		# ${op_list[i]} ${tar_list[i]} && rm ${tar_list[i]}
 		mkdir -p "$payload" && cd "$payload"
+		# TODO: wget 改为想工作进程提交请求
 		wget ${font_urls[i]} && unzip ${tar_list[i]} && rm ${tar_list[i]}
 		cd ..
 	done
@@ -147,11 +149,13 @@ function get_fonts() {
 	cd "$curr_dir"
 }
 
+
 function get_color_scheme() {
 	[[ -d "$color_path" && -f "$color_path/gruvbox.vim" ]] && return # 加入判断，避免重复下载
 	mkdir -p "$color_path"
 	wget "$raw_github/morhetz/gruvbox/master/colors/gruvbox.vim" -O "$color_path/gruvbox.vim"
 }
+
 
 function get_plug_manager() {
 	[ -f "$plugman" ] && return # 加入判断，避免重复下载
@@ -167,13 +171,34 @@ function get_plug_manager() {
 }
 
 
-############## 整个shellscript的入口
+function set_font_conf() {
+	payload="\
+	<alias>
+		<family>sans-serif</family>
+   		<prefer>
+			<family>Fira Code Medium</family>
+			<family>LXGW WenKai Mono</family>
+			<family>JetBrains Mono</family>
+   		</prefer>
+	</alias>\
+"
+	if [ -f "$HOME/.config/fontconfig/fonts.conf" ]; then
+		# TODO
+		return
+	fi
+	mkdir -p "$HOME/.config/fontconfig/"
+	touch "$HOME/.config/fontconfig/fonts.conf"
+}
+
+####################################################################### shellscript入口
 # 剩下就是自己进vim里面:PlugInstall
 "alter_src_via_mirror"
 
 # TODO: 并发下载
-#		信号捕获正常退出
+# 信号捕获正常退出
+# 这里有 5  个网络请求
 "get_plug_manager"
 "get_color_scheme"
 "get_fonts"
+
 echo 'done...'

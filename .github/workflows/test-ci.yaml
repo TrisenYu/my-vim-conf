@@ -4,7 +4,7 @@ name: CI/CD validator designed for init.sh, test.sh and clean_vimview.py
 
 on: [push]
 jobs:
-  fetch-assets-testx:
+  fetch-assets-tests:
     runs-on: ubuntu-latest
     strategy:
       matrix:
@@ -27,7 +27,9 @@ jobs:
             echo "invalid inp-file size was detected!"
             exit 1
           fi 
-          bash init.sh < tmp_inp.txt  && bash test.sh
+          bash init.sh < tmp_inp.txt && bash test.sh
+          bash init.sh < tmp_inp.txt
+          bash init.sh < tmp_inp.txt && rm tmp_inp.txt
           cur_path=`pwd`
           cd "$HOME/.vim/" && ls autoload colors "$HOME/.fonts/"
           cd "$cur_path" && unset cur_path
@@ -37,13 +39,13 @@ jobs:
     steps:
       - name: 切分支
         uses: actions/checkout@main
+        # 3.12.3
       - name: 准备测试文件并测试
         run: |
           python --version
           test_files=(a b c d e f g)
           vimview="$HOME/.vim/view"
-          mkdir -p "$vimview" 
-          readlink -f "$vimview"
+          mkdir -p "$vimview" && readlink -f "$vimview"
           for file in "${test_files[@]}"; do
             echo "123" > "$vimview/$file"
             touch -t 202001011145.14 "$vimview/$file"
