@@ -3,7 +3,7 @@
 # SPDX-LICENSE-IDENTIFIER: GPL2.0
 # (C) All rights reserved. Author: <kisfg@hotmail.com> in 2025
 # Created at 2025年07月06日 星期日 18时04分20秒
-# Last modified at 2025年07月30日 星期三 14时09分28秒
+# Last modified at 2025年07月30日 星期三 16时22分46秒
 set -u
 
 # github
@@ -22,9 +22,9 @@ fira_zip="$firaname.zip"
 lxgw_zip="$lxgwname.zip"
 # 有点难办
 sha256_list=(
-	'5ecb50e9f5aa644d0aebba93881183f0a7b9aaf829bac9dbadaf348f557e0029'
-	'b9caa260fde3cb5681711f91dbfc2d6ec7ecf2fabbf92cef4432fc19c9a73816'
-	'25d806b8ac55e21cddd3a1fdcbc929d3a232a1cac277ae606158824d803d2d09'
+	'dc196c07ff3079759207d920036575b3320edc866e8c697bb378431955256b04'
+	'7efaf62d9d9ef083e4338d81eec1eec3551c1a1c8f9cd40706015b907c87211e'
+	'f1554c50a2dc2f0eca68447d66d03d36b2db7365ed39f1db7c39c5b40a12ec02'
 )
 
 # 本地配置
@@ -54,7 +54,7 @@ function _probe() {
 		echo "$mid_rtt_val"
 		rtt_val=`echo $mid_rtt_val | grep '^rtt' | awk -F'/' '{ print $6 }'`
 		# issue1: ping包比较小就不会携带rtt信息
-		# 2 packets transmited, 0 received, ... , time 1022ms
+		#	例如 2 packets transmited, 0 received, ... , time 1022ms
 		# issue2: ping失败后返回1触发set -e的满足条件，导致整个shellscript挂了
 		if [[ "$rtt_val" == "" ]]; then
 			rtt_val=`echo $mid_rtt_val | grep 'time [0-9]\+ms$' | awk -F' ' ' {print $2 } '`
@@ -96,20 +96,23 @@ function _detect_font() {
 	# op_list=('unzip' 'unzip' 'unzip')
 	tar_list=("$mono_zip" "$fira_zip" "$lxgw_zip")
 	for ((i=0; i<${#font_urls[@]}; i++)); do
-		if [[ ${fontname_list[i]} != '' &&  -d "./${fontname_list[i]}" ]]; then
-			ret=`tar -c ${fontname_list[i]} | sha256sum | awk -F' ' ' { print $1 } '`
+		payload="./${fontname_list[i]}"
+		if [[ -d "$payload" ]]; then
+			# 只要字典序的哈希结果
+			ret=`find "$payload" -type f | xargs sha256sum | awk -F' ' '{ print $1"\n" }' | sha256sum`
+			ret=`echo "$ret" | awk -F' ' '{print $1}'`
 			# 文件有而且齐全
 			[[ "$ret" == ${sha256_list[i]} ]] && continue
 		elif [[ -f ${tar_list[i]} ]]; then
 			# 不存在但有tar/zip
 			# ${op_list[i]} ${tar_list[i]} && rm ${tar_list[i]}
-			mkdir -p "${fontname_list[i]}" && cd "${fontname_list[i]}"
+			mkdir -p "$payload" && cd "$payload"
 			unzip ${tar_list[i]} && rm ${tar_list[i]}
 			cd ..
 			continue
 		fi
 		# ${op_list[i]} ${tar_list[i]} && rm ${tar_list[i]}
-		mkdir -p "${fontname_list[i]}" && cd "${fontname_list[i]}"
+		mkdir -p "$payload" && cd "$payload"
 		wget ${font_urls[i]} && unzip ${tar_list[i]} && rm ${tar_list[i]}
 		cd ..
 	done
@@ -120,9 +123,8 @@ function get_fonts() {
 	jetbrain="$url_prefix/JetBrains/JetBrainsMono/$release_path/v2.304/$mono_zip"
 	firacode="$url_prefix/tonsky/FiraCode/$release_path/6.2/$fira_zip"
 	lxgw="$url_prefix/lxgw/LxgwWenkai/$release_path/v1.520/$lxgw_zip"
-	curr_dir=`pwd`
 
-	# 到HOME目录
+	curr_dir=`pwd`
 	mkdir -p "$fonts_dir" && cd "$fonts_dir"
 	link_list=("$jetbrain" "$firacode" "$lxgw")
 	"_detect_font" ${link_list[@]}
@@ -132,8 +134,7 @@ function get_fonts() {
 		echo "it seems that shell script can not fetch fonts properly..."
 		exit 1
 	fi
-	cd ..
-	echo "$ret"
+	cd "$curr_dir"
 }
 
 function get_color_scheme() {

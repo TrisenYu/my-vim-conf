@@ -37,19 +37,20 @@ jobs:
   python-remove-test:
     runs-on: ubuntu-latest
     steps:
-      - name: 切分支
+      - name: 切分支并设置python版本
         uses: actions/checkout@main
         with:
-          python-version: "3.12.9"
+          python-version: '3.12.9'
       - name: 准备测试文件并测试
         run: |
+          python --version | grep '3.12.9'
           test_files=(a b c d e f g)
           vimview="$HOME/.vim/view"
           mkdir -p "$vimview" 
           readlink -f "$vimview"
           for file in "${test_files[@]}"; do
             echo "123" > "$vimview/$file"
-            touch -t 202001011145 "$vimview/$file"
+            touch -t 202001011145.14 "$vimview/$file"
           done
           ls "$vimview"
           python clean_vimview.py && ls "$vimview" 
