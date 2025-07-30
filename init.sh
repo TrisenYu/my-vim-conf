@@ -3,8 +3,8 @@
 # SPDX-LICENSE-IDENTIFIER: GPL2.0
 # (C) All rights reserved. Author: <kisfg@hotmail.com> in 2025
 # Created at 2025年07月06日 星期日 18时04分20秒
-# Last modified at 2025年07月30日 星期三 17时24分30秒
-set -u
+# Last modified at 2025年07月30日 星期三 17时47分11秒
+set -ux
 
 # github
 raw_github='https://raw.githubusercontent.com'
@@ -52,7 +52,10 @@ function _probe() {
 	for cur_mirror in ${famous_mirrors[@]}; do
 		mid_rtt_val=`ping -c 2 $cur_mirror`
 		echo "$mid_rtt_val"
-		rtt_val=`echo $mid_rtt_val | grep 'rtt min/avg/max/mdev = [0-9\./]\+ ms$' | awk -F'/' '{ print $6 }'`
+		rtt_val=`\
+			echo $mid_rtt_val | grep 'rtt min/avg/max/mdev = [0-9\./]\+ ms$' | \
+			awk -F'/' '{ print $6 }'
+		`
 		# issue1: ping包比较小就不会携带rtt信息
 		#	例如 2 packets transmited, 0 received, ... , time 1022ms
 		# issue2: ping失败后返回1触发set -e的满足条件，导致整个shellscript挂了
@@ -65,6 +68,8 @@ function _probe() {
 		[ -n "$rtt_val" ] && rtt_dict[$rtt_val]="$cur_mirror"
 	done
 	rtt=`printf "%s\n" ${rtt[@]} | sort -n | head -n 1 | awk -F'\n' '{ print $1 }'`
+	# TODO: 这种写法总能保证可以选出一个镜像站，但没有看是否可达
+	# 导致后面做网络请求存在隐患
 	main_mirror=${rtt_dict[$rtt]}
 	unset rtt_dict
 }
@@ -99,13 +104,14 @@ function _detect_font() {
 		payload="$fonts_dir${fontname_list[i]}/"
 		if [[ -d "$payload" ]]; then
 			# 只要字典序的哈希结果
-			# 注意这里的printf
-			ret=`find "$payload" -type f | sort -n | xargs sha256sum`
-			ret=`echo "$ret" | awk -F' ' '{ printf $1"\n" }' | sha256sum`
-			ret=`echo "$ret" | awk -F' ' '{ print $1 }'`
+			ret=`\
+				find "$payload" -type f | sort -n | xargs sha256sum | \
+				awk -F' ' '{ printf $1"\n" }' | sha256sum | \
+				awk -F' ' '{ print $1 }' \
+			`
 			# 文件有而且齐全
 			[[ "$ret" == ${sha256_list[i]} ]] && continue
-		elif [[ -f ${tar_list[i]} ]]; then
+		elif [[ -f "$fonts_dir${tar_list[i]}" ]]; then
 			# 不存在但有tar/zip
 			# ${op_list[i]} ${tar_list[i]} && rm ${tar_list[i]}
 			mkdir -p "$payload" && cd "$payload"
@@ -165,7 +171,8 @@ function get_plug_manager() {
 "alter_src_via_mirror"
 
 # TODO: 并发下载
-"get_plug_manager"
-"get_color_scheme"
+#		信号捕获正常退出
+# "get_plug_manager"
+# "get_color_scheme"
 "get_fonts"
 echo 'done...'

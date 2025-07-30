@@ -29,15 +29,13 @@ jobs:
           bash init.sh < tmp_inp.txt 
           bash init.sh < tmp_inp.txt && rm tmp_inp.txt
           cur_path=`pwd`
-          cd "$HOME/.vim/" && ls autoload colors
-          ls "$HOME/.fonts/"
-          fc-list | grep -Ei "fira|jetbrain|lxgw" 
+          cd "$HOME/.vim/" && ls autoload colors "$HOME/.fonts/"
           cd "$cur_path" && unset cur_path
 
   python-remove-test:
     runs-on: ubuntu-latest
     steps:
-      - name: 切分支并设置python版本
+      - name: 切分支
         uses: actions/checkout@main
       - name: 准备测试文件并测试
         run: |
