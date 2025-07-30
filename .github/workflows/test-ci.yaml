@@ -1,8 +1,6 @@
 # TODO: READ hyperlink below.
 # https://stibel.icu/devops/ci/local-repository.html
-# - name: 安装依赖
-#   run: sudo apt-get install zsh
-name: init_sh CI/CD
+name: CI/CD validator designed for init_sh and clean_vimview.py
 
 on: [push]
 jobs:
@@ -10,8 +8,7 @@ jobs:
     runs-on: ubuntu-latest
     strategy:
       matrix:
-        payload: ["3\\n-1\\n1\\n"]
-        # , "3\\n-1\\n2\\n"]
+        payload: ["3\\n-1\\n1\\n", "3\\n-1\\n2\\n"]
       max-parallel: 2
 
     steps:
@@ -20,7 +17,8 @@ jobs:
 
       - name: 运行 init.sh 并检查是否安装得当
         env:
-          payload: ${{ matrix.payload  }}
+          payload: ${{ matrix.payload }}
+          # 加入重入测试
         run: |
           echo -e "$payload" > tmp_inp.txt
           if [[ ! -s tmp_inp.txt ]]; then
@@ -28,12 +26,10 @@ jobs:
             exit 1
           fi 
           sed -i 's/set -e/set -ex/g' init.sh
+          bash init.sh < tmp_inp.txt 
           bash init.sh < tmp_inp.txt && rm tmp_inp.txt && \
           cd ~/.vim/ && ls autoload colors fonts/*
-          determino=(fira jetbrain lxgw)
-          for font in "${determino[@]}"; do
-            fc-list | grep -i "$font" 
-          done
+          fc-list | grep -Ei "fira|jetbrain|lxgw" 
 
   python-remove-test:
     runs-on: ubuntu-latest
@@ -43,8 +39,6 @@ jobs:
         with:
           python-version: "3.12.9"
       - name: 准备测试文件并测试
-        # TODO: 后面应该改成 vimrc 内调用 python 来清理view文件夹下的内容才行
-        # cp clean_vimview.py ~/.vim/
         run: |
           test_files=(a b c d e f g)
           vimview="$HOME/.vim/view"
@@ -54,5 +48,6 @@ jobs:
             echo "123" > "$vimview/$file"
             touch -t 202001011145 "$vimview/$file"
           done
-          python clean_vimview.py && unset test_files && ls "$vimview" 
-          unset vimview
+          ls "$vimview"
+          python clean_vimview.py && ls "$vimview" 
+          unset test_files vimview

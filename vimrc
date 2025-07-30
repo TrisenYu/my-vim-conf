@@ -129,9 +129,8 @@ func Pad_header()
 		let header_comment .= "#!/usr/bin/env ".&filetype."\n"
 		let header_comment .= "# -*- coding: utf-8 -*-"."\n"
 	elseif (&filetype == 'xml' || &filetype == 'html')
-		let cloz = " -->"
-		let br = '{'
-		let ebr = '}'
+		" xml 尖括号冲突
+		let [cloz, br, ebr] = [' -->', '{', '}']
 	else
 		let addt = sign."\n"
 	endif
