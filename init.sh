@@ -3,7 +3,7 @@
 # SPDX-LICENSE-IDENTIFIER: GPL2.0
 # (C) All rights reserved. Author: <kisfg@hotmail.com> in 2025
 # Created at 2025年07月06日 星期日 18时04分20秒
-# Last modified at 2025年07月30日 星期三 17时56分51秒
+# Last modified at 2025年07月30日 星期三 18时29分34秒
 set -u
 
 # github
@@ -104,12 +104,12 @@ function _detect_font() {
 		payload="$fonts_dir${fontname_list[i]}/"
 		if [[ -d "$payload" ]]; then
 			# 只要字典序的哈希结果
-			find "$payload" -type f | sort -n
-			find "$payload" -type f | sort -n | xargs sha256sum
-			find "$payload" -type f | sort -n | xargs sha256sum | awk -F' ' '{ printf $1"\n" }'
+			find "$payload" -type f | sort -fun
+			find "$payload" -type f | sort -fun | xargs sha256sum
+			find "$payload" -type f | sort -fun | xargs sha256sum | awk -F' ' '{ printf $1"\n" }'
 
 			ret=`\
-				find "$payload" -type f | sort -n | xargs sha256sum | \
+				find "$payload" -type f | sort -fun | xargs sha256sum | \
 				awk -F' ' '{ printf $1"\n" }' | sha256sum | \
 				awk -F' ' '{ print $1 }' \
 			`
