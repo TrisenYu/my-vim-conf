@@ -3,8 +3,8 @@
 # SPDX-LICENSE-IDENTIFIER: GPL2.0
 # (C) All rights reserved. Author: <kisfg@hotmail.com> in 2025
 # Created at 2025年07月06日 星期日 18时04分20秒
-# Last modified at 2025年07月30日 星期三 17时47分11秒
-set -ux
+# Last modified at 2025年07月30日 星期三 17时53分58秒
+set -u
 
 # github
 raw_github='https://raw.githubusercontent.com'
@@ -104,6 +104,10 @@ function _detect_font() {
 		payload="$fonts_dir${fontname_list[i]}/"
 		if [[ -d "$payload" ]]; then
 			# 只要字典序的哈希结果
+			find "$payload" -type -f | sort -n
+			find "$payload" -type -f | sort -n | xargs sha256sum
+			find "$payload" -type -f | sort -n | xargs sha256sum | awk -F' ' '{ printf $1"\n" }'
+
 			ret=`\
 				find "$payload" -type f | sort -n | xargs sha256sum | \
 				awk -F' ' '{ printf $1"\n" }' | sha256sum | \
@@ -172,7 +176,7 @@ function get_plug_manager() {
 
 # TODO: 并发下载
 #		信号捕获正常退出
-# "get_plug_manager"
-# "get_color_scheme"
+"get_plug_manager"
+"get_color_scheme"
 "get_fonts"
 echo 'done...'
