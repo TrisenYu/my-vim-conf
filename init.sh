@@ -3,7 +3,7 @@
 # SPDX-LICENSE-IDENTIFIER: GPL2.0
 # (C) All rights reserved. Author: <kisfg@hotmail.com> in 2025
 # Created at 2025年07月06日 星期日 18时04分20秒
-# Last modified at 2025年07月30日 星期三 22时49分59秒
+# Last modified at 2025年07月30日 星期三 23时13分55秒
 set -u
 
 # github
@@ -105,17 +105,8 @@ function _detect_font() {
 		payload="$fonts_dir${fontname_list[i]}/"
 		if [[ -d "$payload" ]]; then
 			# 只要字典序的哈希结果
-			echo "---------------------------------"
-			tmp=`find "$payload" -type f | sort -fn`
-			echo "--> $tmp"
-			tmp=`find "$payload" -type f | sort -fn | xargs sha256sum`
-			echo "==> $tmp"
-			tmp=`find "$payload" -type f | sort -fn | xargs sha256sum | awk -F' ' '{ printf $1"\n" }'`
-			echo "~~> $tmp"
-			tmp=`find "$payload" -type f | sort -fn | xargs sha256sum | awk -F' ' '{ printf $1"\n" }' | sha256sum`
-			echo ">>> $tmp"
 			ret=`\
-				find "$payload" -type f | sort -fn | xargs sha256sum | \
+				find "$payload" -type f | sort -f | xargs sha256sum | \
 				awk -F' ' '{ printf $1"\n" }' | sha256sum | \
 				awk -F' ' '{ print $1 }' \
 			`
@@ -137,7 +128,7 @@ function _detect_font() {
 }
 
 function get_fonts() {
-	# TODO: 如果能在这里换最新的字体也不错
+	# 直接固定写死用这些版本的字体
 	jetbrain="$url_prefix/JetBrains/JetBrainsMono/$release_path/v2.304/$mono_zip"
 	firacode="$url_prefix/tonsky/FiraCode/$release_path/6.2/$fira_zip"
 	lxgw="$url_prefix/lxgw/LxgwWenkai/$release_path/v1.520/$lxgw_zip"
@@ -167,8 +158,7 @@ function get_plug_manager() {
 		 "$raw_github/junegunn/vim-plug/baa66bcf349a6f6c125b0b2b63c112662b0669e1/plug.vim"
 	# 不可将以下关系合并到上面的判断
 	[[ "$res" == '' ]] && return
-	# 需要备份plugman，防止意外
-	# 后面自己删
+	# 需要备份plugman，防止意外. 后面自己删
 	cp "$plugman" "$plugman.backup"
 	# 注意下面的引号
 	# \ '^https://git::@github\.com', 'https://wget.la/https://github.com', '')
@@ -176,7 +166,7 @@ function get_plug_manager() {
 }
 
 
-# 整个shellscript的入口
+############## 整个shellscript的入口
 # 剩下就是自己进vim里面:PlugInstall
 "alter_src_via_mirror"
 

@@ -28,7 +28,7 @@ jobs:
             exit 1
           fi 
           bash init.sh < tmp_inp.txt 
-          bash init.sh < tmp_inp.txt && rm tmp_inp.txt
+          bash test.sh
           cur_path=`pwd`
           cd "$HOME/.vim/" && ls autoload colors "$HOME/.fonts/"
           cd "$cur_path" && unset cur_path
