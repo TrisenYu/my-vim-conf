@@ -198,6 +198,11 @@ filetype indent on
 map <C-A> ggVGY
 map <silent> <C-&> :NERDTreeToggle<CR>
 nmap <F8> :TagbarToggle<CR>
+" 调整窗口的映射
+map <C-W><UP> <ESC><C-W>-
+map <C-W><DOWN> <ESC><C-W>+
+map <C-W><LEFT> <ESC><C-W>>
+map <C-W><RIGHT> <ESC><C-W><
 
 colorscheme gruvbox
 " color morning

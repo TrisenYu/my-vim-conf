@@ -8,8 +8,7 @@ jobs:
     runs-on: ubuntu-latest
     strategy:
       matrix:
-        payload: ["3\\n-1\\n2\\n"]
-        # "3\\n-1\\n1\\n", 
+        payload: ["3\\n-1\\n1\\n", "3\\n-1\\n2\\n"]
       max-parallel: 2
 
     steps:
@@ -22,10 +21,6 @@ jobs:
           # 加入重入测试
           # sed -i 's/set -u/set -ux/g' init.sh
         run: |
-          ver=`sort --version`
-          echo "$ver"
-          unset ver
-          sudo apt-get update && sudo apt-get upgrade 
           sort --version
           echo -e "$payload" > tmp_inp.txt
           if [[ ! -s tmp_inp.txt ]]; then
@@ -53,6 +48,5 @@ jobs:
             echo "123" > "$vimview/$file"
             touch -t 202001011145.14 "$vimview/$file"
           done
-          ls "$vimview"
-          python clean_vimview.py && ls "$vimview" 
+          ls "$vimview" && python clean_vimview.py && ls "$vimview" 
           unset test_files vimview
