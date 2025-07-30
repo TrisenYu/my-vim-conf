@@ -3,8 +3,8 @@
 # SPDX-LICENSE-IDENTIFIER: GPL2.0
 # (C) All rights reserved. Author: <kisfg@hotmail.com> in 2025
 # Created at 2025年07月06日 星期日 18时04分20秒
-# Last modified at 2025年07月30日 星期三 13时31分51秒
-set -e
+# Last modified at 2025年07月30日 星期三 13时47分13秒
+set -u
 
 # github
 raw_github='https://raw.githubusercontent.com'
@@ -51,14 +51,16 @@ function _probe() {
 	rtt_dict=()
 	for cur_mirror in ${famous_mirrors[@]}; do
 		mid_rtt_val=`ping -c 2 $cur_mirror`
+		echo "$mid_rtt_val"
 		rtt_val=`echo $mid_rtt_val | grep '^rtt' | awk -F'/' '{ print $6 }'`
-		# issue: ping包比较小就不会携带rtt信息
+		# issue1: ping包比较小就不会携带rtt信息
 		# 2 packets transmited, 0 received, ... , time 1022ms
-		if [[ "$rtt_Val" == "" ]]; then
+		# issue2: ping失败后返回1触发set -e的满足条件，导致整个shellscript挂了
+		if [[ "$rtt_val" == "" ]]; then
 			rtt_val=`echo $mid_rtt_val | grep 'time [0-9]\+ms$' | awk -F' ' ' {print $2 } '`
 		fi
 		# 否则认为站点不可达
-		[[ "$rtt_Val" == "" ]] && rtt_val=31415926535897932384626433
+		[[ "$rtt_val" == "" ]] && rtt_val=31415926535897932384626433
 		rtt+=("$rtt_val")
 		[ -n "$rtt_val" ] && rtt_dict[$rtt_val]="$cur_mirror"
 	done
@@ -84,6 +86,7 @@ function alter_src_via_mirror() {
 	res="https://$main_mirror"
 	url_prefix="$res/$main_github"
 	raw_github="$res/$raw_github"
+	echo "$res" "$url_prefix" "$raw_github"
 }
 
 # 入参:  压缩包名称 url
@@ -103,8 +106,8 @@ function _detect_font() {
 			unzip ${tar_list[i]} && rm ${tar_list[i]}
 			continue
 		fi
-		wget ${font_urls[i]} && unzip ${tar_list[i]} && rm ${tar_list[i]}
 		# ${op_list[i]} ${tar_list[i]} && rm ${tar_list[i]}
+		wget ${font_urls[i]} && unzip ${tar_list[i]} && rm ${tar_list[i]}
 	done
 }
 
