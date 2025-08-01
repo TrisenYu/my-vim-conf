@@ -1,5 +1,6 @@
 " 不会可以看这个 https://yongfu.name/Learn-Vim/
 " 预计占用30MB
+" 需要解决这个问题
 set runtimepath+=~/.vim/autoload/
 call plug#begin()
 	Plug 'preservim/nerdtree'					" 目录树
@@ -11,6 +12,7 @@ call plug#begin()
 	Plug 'rust-lang/rust.vim'
 	Plug 'preservim/tagbar'						" 层级目录显示
 	Plug 'boydos/emmet-vim'
+	Plug 'dense-analysis/ale'					" 语法错误检查
 call plug#end()
 
 let g:ycm_semantic_triggers = {
@@ -74,8 +76,44 @@ let g:indent_guides_enable_on_vim_startup = 1
 let g:user_emmet_install_global = 0
 let g:user_emmet_expandabbr_key = '<C-e>'
 
+let g:ale_lint_on_text_changed = 'never'
+let g:ale_completion_delay = 100 " ms
+let g:ale_lint_on_enter = 0
+let g:ale_sign_error = 'x'
+let g:ale_sign_warning = '!'
+" 这几个得提前去下才行
+" 其他怎么办？
+let g:ale_linters = {
+\   'c++': ['clang'],
+\   'c': ['clang'],
+\   'python': ['pylint'],
+\}
+let g:ale_c_clangtidy_checks = ['-*', 'cppcoreguidelines-*']
 
 autocmd FileType html,css,xml EmmetInstall
+
+
+" TOFIX: 如果在非常大的项目里面(比如下载过插件后的这个仓库的目录下)用 youcompleteme 会巨卡，
+"	prompt: long latency vim youcompleteme
+" YouCompleteMe on and off with F3
+" thanks https://vi.stackexchange.com/a/36667
+func Toggle_ycm()
+    if g:ycm_show_diagnostics_ui == 0
+        let g:ycm_auto_trigger = 1
+        let g:ycm_show_diagnostics_ui = 1
+        :YcmRestartServer
+        :e
+        :echo "YCM on"
+    elseif g:ycm_show_diagnostics_ui == 1
+        let g:ycm_auto_trigger = 0
+        let g:ycm_show_diagnostics_ui = 0
+        :YcmRestartServer
+        :e
+        :echo "YCM off"
+    endif
+endfunction
+map <F3> :call Toggle_ycm() <CR>
+
 
 " vimscript 要求函数名首字母大写
 func Config_NerdTree()
@@ -122,6 +160,7 @@ endfunc
 func Pad_header()
 	let license = "SPDX-LICENSE-IDENTIFIER: GPL2.0"
 	let [header_comment, sign] = ['', Get_sign()]
+	" addtion, comment_ed email_bracket end_of_email_bracket
 	let [addt, cloz, br, ebr] = ['', '', '<', '>']
 
 	" 难以吐槽这个python
@@ -137,9 +176,11 @@ func Pad_header()
 
 	let header_comment .= sign.license.cloz."\n".addt
 	let header_comment .= sign."(C) All rights reserved. "
+	" TODO: 别人如果要用，邮箱难道还要到这个函数里面来改吗？
 	let header_comment .= "Author: ".br."kisfg@hotmail.com".ebr." in ".strftime("%Y").cloz."\n"
 	let header_comment .= sign."Created at ".strftime("%c").cloz."\n"
 	let header_comment .= sign."Last modified at ".strftime("%c").cloz."\n"
+	" TODO: 加 prompt 用于辅助构建，比如 cmake --help-command-list
 	exec "normal i".header_comment | exec "normal G"
 endfunc
 
@@ -167,6 +208,7 @@ func Update_info()
 
 	" 更新后自动去除行末空格
 	silent! %s/\s\+$//ge
+	" TODO: 更新后似乎光标错位
 endfunc
 
 autocmd BufNewFile *.{c[cu],java,lua,[ch]pp,[ch],[hs]h,py,go,[jrt]s,html\=,xml},makefile,CMakeLists.txt exec "call Pad_header()"
@@ -291,5 +333,6 @@ endif
 	
 
 set cursorline
-highlight CursorLine guibg=lightgrey
-              
+highlight CursorLine guibg=lightgrey 
+" 透明背景
+highlight Normal ctermbg=none
