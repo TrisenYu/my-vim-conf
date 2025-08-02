@@ -1,4 +1,4 @@
-# Last modified at 2025年08月02日 星期六 19时01分34秒
+# Last modified at 2025年08月02日 星期六 19时17分40秒
 # TODO: READ hyperlink below.
 # https://stibel.icu/devops/ci/local-repository.html
 name: CI/CD validator designed for init.sh, test.sh and clean_vimview.py
@@ -9,7 +9,7 @@ jobs:
     runs-on: ubuntu-latest
     strategy:
       matrix:
-        payload: ["3\\n-1\\n2\\n"] # "3\\n-1\\n1\\n",
+        payload: ["3\\n-1\\n1\\n","3\\n-1\\n2\\n"] #
       max-parallel: 2
 
     steps:
@@ -35,8 +35,8 @@ jobs:
           cur_path=`pwd`
           cd "$HOME/.vim/" && ls autoload colors "$HOME/.fonts/"
           cd "$cur_path" && unset cur_path
-          cat "$HOME/autoload/plug.vim" | grep -in "github.com"
-          cat "$HOME/.config/fontconfig/fonts.conf" | grep -Ein "modified|lxgw|fira|jetbrains"
+          cat "$HOME/.vim/autoload/plug.vim" | grep -in "github.com"
+          cat "$HOME/.config/fontconfig/fonts.conf" | grep -Ei "modified|lxgw|fira|jetbrains"
 
   python-remove-test:
     runs-on: ubuntu-latest

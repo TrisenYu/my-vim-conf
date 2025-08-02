@@ -3,7 +3,7 @@
 # SPDX-LICENSE-IDENTIFIER: GPL2.0
 # (C) All rights reserved. Author: <kisfg@hotmail.com> in 2025
 # Created at 2025年07月06日 星期日 18时04分20秒
-# Last modified at 2025年08月02日 星期六 19时02分55秒
+# Last modified at 2025年08月02日 星期六 19时13分18秒
 # 我的评价是不如直接编程
 # TODO: 这么复杂的脚本居然没有getopts?
 set -u
@@ -120,7 +120,7 @@ function alter_src_via_mirror() {
 function _detect_font() {
 	font_urls=($@)
 	fontname_list=("$mononame" "$firaname" "$lxgwname")
-	tar_list=("$mono_zip" "$fira_zip" "$lxgw_zip")
+	tar_list=("$fonts_dir$mono_zip" "$fonts_dir$fira_zip" "$fonts_dir$lxgw_zip")
 	for ((i=0; i<${#font_urls[@]}; i++)); do
 		payload="$fonts_dir${fontname_list[i]}/"
 		function unzipper() {
