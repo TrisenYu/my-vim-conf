@@ -15,37 +15,38 @@ call plug#begin()
 	Plug 'dense-analysis/ale'					" 语法错误检查
 call plug#end()
 
+
 let g:ycm_semantic_triggers = {
-\ 'c': ['re!\w{2}'],
-\ "cpp": ['re!\w{2}'],
-\ "python": ['re!\w{2}'],
-\ "rust": ['re!\w{2}'],
-\ "java": ['re!\w{2}'],
-\ "go": ['re!\w{2}'],
-\ "erlang": ['re!\w{2}'],
-\ "perl": ['re!\w{2}'],
-\ "cs": ['re!\w{2}'],
-\ "lua": ['re!\w{2}'],
-\ "javascript": ['re!\w{2}'],
-\ }
+	\ 'c': ['re!\w{2}'],
+	\ "cpp": ['re!\w{2}'],
+	\ "python": ['re!\w{2}'],
+	\ "rust": ['re!\w{2}'],
+	\ "java": ['re!\w{2}'],
+	\ "go": ['re!\w{2}'],
+	\ "erlang": ['re!\w{2}'],
+	\ "perl": ['re!\w{2}'],
+	\ "cs": ['re!\w{2}'],
+	\ "lua": ['re!\w{2}'],
+	\ "javascript": ['re!\w{2}'],
+	\ }
 let g:ycm_filetype_whitelist = {
-\ "c": 1,
-\ "cpp": 1,
-\ "hpp": 1,
-\ "cc": 1,
-\ "cu": 1,
-\ "h": 1,
-\ "lua": 1,
-\ "python": 1,
-\ "go": 1,
-\ "typescript": 1,
-\ "sh": 1,
-\ "zsh": 1,
-\ "rust": 1,
-\ "javascript": 1,
-\ "cmake": 1,
-\ "make": 1,
-\ }
+	\ "c": 1,
+	\ "cpp": 1,
+	\ "hpp": 1,
+	\ "cc": 1,
+	\ "cu": 1,
+	\ "h": 1,
+	\ "lua": 1,
+	\ "python": 1,
+	\ "go": 1,
+	\ "typescript": 1,
+	\ "sh": 1,
+	\ "zsh": 1,
+	\ "rust": 1,
+	\ "javascript": 1,
+	\ "cmake": 1,
+	\ "make": 1,
+	\ }
 " 语法关键字自动补全
 let g:ycm_seed_identifiers_with_sytanx = 1
 " 字符串和注释内可用自动补全
@@ -235,8 +236,11 @@ autocmd! BufWritePost vimrc source %
 " TODO: 检查插件是否存在，如果不存在则安装
 
 " 启动nerdTree并把光标留在第二个窗口
-autocmd VimEnter * NERDTree | wincmd p
-autocmd BufEnter * exec "call Config_NerdTree()"
+" TODO: 首先需要nerdtree下好
+if exists('NERDTree')
+	autocmd VimEnter * NERDTree | wincmd p
+	autocmd BufEnter * exec "call Config_NerdTree()"
+endif
 " 返回上一次对该文件的编辑位置
 autocmd BufReadPost * exec "call Ret_to_last_pos()"
 " 不会自动增加注释

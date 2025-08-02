@@ -3,7 +3,7 @@
 # SPDX-LICENSE-IDENTIFIER: GPL2.0
 # (C) All rights reserved. Author: <kisfg@hotmail.com> in 2025
 # Created at 2025年07月06日 星期日 18时04分20秒
-# Last modified at 2025年08月02日 星期六 19时37分30秒
+# Last modified at 2025年08月02日 星期六 19时54分55秒
 # 我的评价是不如直接编程
 # TODO: 这么复杂的脚本居然没有getopts?
 set -u
@@ -126,8 +126,9 @@ function _detect_font() {
 	for ((i=0; i<${#font_urls[@]}; i++)); do
 		payload="$fonts_dir${fontname_list[i]}/"
 		function unzipper() {
-			unzip "${tar_list[i]}"
+			unzip "${tar_list[i]}" -d "$payload"
 			rm ${tar_list[i]} && unset payload
+			cd ..
 		}
 
 		if [[ -d "$payload" ]]; then
