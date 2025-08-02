@@ -3,7 +3,7 @@
 # SPDX-LICENSE-IDENTIFIER: GPL2.0
 # (C) All rights reserved. Author: <kisfg@hotmail.com> in 2025
 # Created at 2025年07月06日 星期日 18时04分20秒
-# Last modified at 2025年08月02日 星期六 19时13分18秒
+# Last modified at 2025年08月02日 星期六 19时32分56秒
 # 我的评价是不如直接编程
 # TODO: 这么复杂的脚本居然没有getopts?
 set -u
@@ -118,13 +118,15 @@ function alter_src_via_mirror() {
 
 # 入参:  压缩包名称 url
 function _detect_font() {
+	curr_dir=`pwd`
+	mkdir -p "$fonts_dir" && cd "$fonts_dir"
 	font_urls=($@)
 	fontname_list=("$mononame" "$firaname" "$lxgwname")
-	tar_list=("$fonts_dir$mono_zip" "$fonts_dir$fira_zip" "$fonts_dir$lxgw_zip")
+	tar_list=("$mono_zip" "$fira_zip" "$lxgw_zip")
 	for ((i=0; i<${#font_urls[@]}; i++)); do
 		payload="$fonts_dir${fontname_list[i]}/"
 		function unzipper() {
-			unzip -d "$payload" "${tar_list[i]}"
+			unzip "${tar_list[i]}"
 			rm ${tar_list[i]} && unset payload
 		}
 
@@ -143,11 +145,12 @@ function _detect_font() {
 			{"unzipper"}&
 		fi
 		{
-			wget -P "$payload" "${font_urls[i]}" &> /dev/null
+			wget "${font_urls[i]}" &> /dev/null
 			"unzipper"
 		}&
 	done
 	wait
+	cd "$curr_dir"
 }
 
 function get_fonts() {
@@ -156,17 +159,14 @@ function get_fonts() {
 	firacode="$url_prefix/tonsky/FiraCode/$release_path/6.2/$fira_zip"
 	lxgw="$url_prefix/lxgw/LxgwWenkai/$release_path/v1.520/$lxgw_zip"
 
-	curr_dir=`pwd`
-	mkdir -p "$fonts_dir" && cd "$fonts_dir"
 	link_list=("$jetbrain" "$firacode" "$lxgw")
 	"_detect_font" ${link_list[@]}
-	fc-cache -f -v
+	fc-cache -fv
 	ret=`fc-list | grep -Ei "$lxgwname|$firaname|$mononame"`
 	if [[ "$ret" == '' || $? != 0 ]]; then
 		echo "it seems that shell script can not fetch fonts properly..."
 		exit 1
 	fi
-	cd "$curr_dir"
 }
 
 
