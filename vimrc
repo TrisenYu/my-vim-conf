@@ -87,11 +87,11 @@ let g:ale_sign_warning = '!'
 " 这几个得提前去下才行
 " 其他怎么办？
 let g:ale_linters = {
-\   'c++': ['clang'],
-\   'c': ['clang'],
-\   'python': ['pylint'],
-\	'go': ['gofmt', 'golint', 'gopls', 'govet'],
-\}
+	\   'c++': ['clang'],
+	\   'c': ['clang'],
+	\   'python': ['pylint'],
+	\	'go': ['gofmt', 'golint', 'gopls', 'govet'],
+	\}
 let g:ale_c_clangtidy_checks = ['-*', 'cppcoreguidelines-*']
 let g:ale_fix_on_save = 1
 
@@ -116,7 +116,7 @@ func Toggle_ycm()
         :e
         :echo "YCM off"
     endif
-endfunction
+endfunc
 map <F3> :call Toggle_ycm() <CR>
 
 
@@ -213,9 +213,9 @@ func Update_info()
 	endif
 
 	" 更新后自动去除行末空格和空行
+	" TODO: 似乎有光标错位的情况
 	silent! %s/\s\+$//ge
 	silent! %s/^$\n\+\%$//ge
-	" TODO: 更新后似乎光标错位
 endfunc
 
 autocmd BufNewFile 
@@ -231,9 +231,10 @@ autocmd BufWinEnter
 " 这里来主动删掉
 autocmd BufWritePre vimrc silent exec "!python ~/.vim/clean_vimview.py -ra true"
 " 修改后自动修改
-autocmd! BufWritePost vimrc source %
+
+" TOFIX: 感觉打开vim卡卡的
+" autocmd! BufWritePost vimrc source %
 """ 自动命令配置
-" TODO: 检查插件是否存在，如果不存在则安装
 
 " 启动nerdTree并把光标留在第二个窗口
 " TODO: 首先需要nerdtree下好
@@ -256,6 +257,7 @@ map <C-A> ggVGY
 map <silent> <C-&> :NERDTreeToggle<CR>
 nmap <F8> :TagbarToggle<CR>
 " 调整窗口的映射
+" TOFIX: 不过还是没有和tmux一样好用orz
 map <C-W><UP> <ESC><C-W>-
 map <C-W><DOWN> <ESC><C-W>+
 map <C-W><LEFT> <ESC><C-W>>

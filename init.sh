@@ -3,7 +3,7 @@
 # SPDX-LICENSE-IDENTIFIER: GPL2.0
 # (C) All rights reserved. Author: <kisfg@hotmail.com> in 2025
 # Created at 2025年07月06日 星期日 18时04分20秒
-# Last modified at 2025年08月02日 星期六 20时26分33秒
+# Last modified at 2025年08月03日 星期日 00时37分21秒
 # 我的评价是不如直接编程
 # TODO: 这么复杂的脚本居然没有getopts?
 set -u
@@ -33,11 +33,14 @@ sha256_list=(
 
 # 本地配置
 vimdir="$HOME/.vim"
+fonts_dir="$HOME/.fonts/"
 color_path="$vimdir/colors"
 init_dir="$vimdir/autoload"
+vim_target="$vimdir/vimrc"
 plugman="$init_dir/plug.vim"
-fonts_dir="$HOME/.fonts/"
 
+curr_dir=`pwd`
+vimrc_hash=`sha256sum "$curr_dir/vimrc"`
 color_schash='040138616bec342d5ea94d4db296f8ddca17007a'
 plugman_hash='baa66bcf349a6f6c125b0b2b63c112662b0669e1'
 
@@ -60,12 +63,10 @@ END_OF_LINE
 
 # ping 所有给定的镜像站，取时长最小、丢包数最小的一个
 function _probe() {
-	mirror_tbl=""
-	# 感觉ping也能并发地做
-	for cur_mirror in ${famous_mirrors[@]}; do
-		# 0% packet loss
-		# TODO: ping的次数
-		mid_rtt_val=`ping -c 2 $cur_mirror`
+	mirr_str=""
+	for cur_mirr in ${famous_mirrors[@]}; do
+		# TODO: ping的次数搞成配置 ping也并发
+		mid_rtt_val=`ping -c 2 $cur_mirr`
 		loss_rate=`echo "$mid_rtt_val" | grep -oP '([0-9\.]+)(?=% packet loss)'`
 		rtt_val=`\
 			echo "$mid_rtt_val" | grep 'rtt min/avg/max/mdev = [0-9\./]\+ ms$' | \
@@ -76,24 +77,29 @@ function _probe() {
 		# issue2: ping失败后返回1触发set -e的满足条件，导致整个shellscript挂了
 		if [[ "$rtt_val" == "" ]]; then
 			rtt_val=`echo "$mid_rtt_val" | grep -o ' [0-9\.]\+ms$' | awk -F'ms' '{ print $1 }'`
-			rtt_val=`echo "scale=6; $rtt_val/2" | bc`
+			rtt_val=`echo "scale=6;$rtt_val/2" | bc`
 		fi
 		# 否则认为站点不可达
 		[[ "$rtt_val" == "" ]] && rtt_val=31415926535897932384626433
-		mirror_tbl="$mirror_tbl""$cur_mirror $rtt_val $loss_rate\n"
+		mirr_str+="$cur_mirr,$rtt_val,$loss_rate\n"
 	done
 	# 策略:
 	#	时间小的优先
 	# 	时间一致的前提下选丢包率靠近零的
-	mirror_tbl=`echo "${mirror_tbl:0:-2}" | sort -n -t ' ' -k 2 -k 3 | head -n 1`
-	mirr_check=`echo -e "$mirror_tbl" | awk -F' ' '{ print $3 }' | awk -F"\n" '{ print $1 }'`
-	# 这种情况不如直接破罐破摔
-	if [[ "$mirr_check" -ge 90 ]]; then
-		res_mirror=""
-		return
-	fi
-	res_mirror=`echo "$mirror_tbl" | awk -F' ' '{ print $1 }'`
-	unset rtt_dict
+	mirror_tbl=(`echo -e "${mirr_str:0:-2}" | sort -n -t ' ' -k2 -k3 | tr -n "\n" ' '`)
+	mirr_check=`echo -e "$mirror_tbl" | awk -F' ' '{ print $3 }' | head -n 1`
+	choice_rec=31415926535897932384626433
+	for item in ${mirror_tbl[@]}; do
+		curr_mirr=(`echo "$item" | tr ',' ' '`)
+		mirr_check=${curr_mirr[2]}
+		mirr_speed=${curr_mirr[1]}
+		[[ "$mirr_check" -ge 90 ]] && continue
+		if [[ "$choice_rec" -gt "$mirr_speed" ]]; then
+			choice_rec="$mirr_speed"
+			res_mirror=${curr_mirr[0]}
+		fi
+	done
+	unset rtt_dict mirr_str mirror_tbl mirr_check choice_rec
 }
 
 
@@ -118,7 +124,6 @@ function alter_src_via_mirror() {
 
 # 入参:  压缩包名称 url
 function _detect_font() {
-	curr_dir=`pwd`
 	mkdir -p "$fonts_dir" && cd "$fonts_dir"
 	font_urls=($@)
 	fontname_list=("$mononame" "$firaname" "$lxgwname")
@@ -159,8 +164,8 @@ function get_fonts() {
 	jetbrain="$url_prefix/JetBrains/JetBrainsMono/$release_path/v2.304/$mono_zip"
 	firacode="$url_prefix/tonsky/FiraCode/$release_path/6.2/$fira_zip"
 	lxgw="$url_prefix/lxgw/LxgwWenkai/$release_path/v1.520/$lxgw_zip"
-
 	link_list=("$jetbrain" "$firacode" "$lxgw")
+
 	"_detect_font" ${link_list[@]}
 	fc-cache -fv
 	ret=`fc-list | grep -Ei "$lxgwname|$firaname|$mononame"`
@@ -184,7 +189,8 @@ function get_color_scheme() {
 function get_plug_manager() {
 	[ -f "$plugman" ] && return # 加入判断，避免重复下载
 	{
-		wget -P "$init_dir" "$raw_github/junegunn/vim-plug/$plugman_hash/plug.vim" &> /dev/null
+		wget -P "$init_dir" \
+			"$raw_github/junegunn/vim-plug/$plugman_hash/plug.vim" &> /dev/null
 		[[ "$res_mirror" == '' ]] && return
 		cp "$plugman" "$plugman.backup"
 		# 不可将以下关系合并到上面的判断
@@ -240,18 +246,17 @@ $payload
 # 剩下就是自己进vim里面:PlugInstall
 # TODO: sync for mirror list
 "alter_src_via_mirror"
-
 "get_plug_manager"
 "get_color_scheme"
 "get_fonts"
 "set_font_conf"
 
-## TODO: 确定vim版本而决定是否需要从头开始编译
+## TODO: 确定vim版本而决定是否需要从头开始编译，并编写可用的编译脚本
 # vim --version
 
-# 经过color后已经创建~/.vim/目录
-if [[ ! -s "$vimdir/vimrc" || `cat "$vimdir/vimrc" | sha256sum` != `sha256sum "./vimrc"` ]]; then
-	cp './vimrc' "$vimdir/vimrc"
+if [[ ! -s "$vim_target" || `cat "$vim_target" | sha256sum` != "$vimrc_hash" ]]; then
+	# 经过color后已经创建~/.vim/目录
+	cp "$curr_dir/vimrc" "$vimdir/vimrc"
 	vim -u "$vimdir/vimrc" +PlugInstall! +wa! &> /dev/null
 fi
 echo 'done...'
