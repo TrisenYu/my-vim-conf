@@ -3,7 +3,7 @@
 # SPDX-LICENSE-IDENTIFIER: GPL2.0
 # (C) All rights reserved. Author: <kisfg@hotmail.com> in 2025
 # Created at 2025年07月06日 星期日 18时04分20秒
-# Last modified at 2025年08月02日 星期六 19时32分56秒
+# Last modified at 2025年08月02日 星期六 19时37分30秒
 # 我的评价是不如直接编程
 # TODO: 这么复杂的脚本居然没有getopts?
 set -u
@@ -247,8 +247,8 @@ $payload
 # 经过color后已经创建~/.vim/目录
 ## TODO: 确定vim版本而决定是否需要从头开始编译
 # vim --version
-cp './vimrc' "$HOME/.vim/vimrc"
-source "$HOME/.vim/vimrc"
+cp './vimrc' "$vimdir/vimrc"
+vim -u "$vimdir/vimrc" +PlugInstall! +wa!
 echo 'done...'
 
 ## 计算加载插件耗时
