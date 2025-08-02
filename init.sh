@@ -1,17 +1,18 @@
-#!/usr/bin/env sh
+#!/usr/bin/env bash
 # -*- coding: utf-8 -*-
 # SPDX-LICENSE-IDENTIFIER: GPL2.0
 # (C) All rights reserved. Author: <kisfg@hotmail.com> in 2025
 # Created at 2025年07月06日 星期日 18时04分20秒
-# Last modified at 2025年08月02日 星期六 00时46分36秒
+# Last modified at 2025年08月02日 星期六 19时02分55秒
 # 我的评价是不如直接编程
-# TODO: 这么复杂的脚本居然没有getopts和help?
+# TODO: 这么复杂的脚本居然没有getopts?
 set -u
 
 ######################### 常量定义
 # github
 raw_github='https://raw.githubusercontent.com'
 main_github='https://github.com'
+res_mirror=''
 release_path='releases/download'
 url_prefix="$main_github"
 
@@ -37,6 +38,7 @@ init_dir="$vimdir/autoload"
 plugman="$init_dir/plug.vim"
 fonts_dir="$HOME/.fonts/"
 
+color_schash='040138616bec342d5ea94d4db296f8ddca17007a'
 plugman_hash='baa66bcf349a6f6c125b0b2b63c112662b0669e1'
 
 # TODO: 如何获取镜像主机名单？
@@ -48,60 +50,70 @@ famous_mirrors=(
 	'ghproxy.net'
 	'ghproxy.homeboyc.cn'
 )
-main_mirror=''
 
 ########################################################## 函数定义
-# ping 所有给定的镜像站，取时长最小的一个
+function help() {
+	cat << END_OF_LINE
+辅助配置vim的shellscript
+END_OF_LINE
+}
+
+# ping 所有给定的镜像站，取时长最小、丢包数最小的一个
 function _probe() {
-	rtt=()
-	declare -A rtt_dict
-	rtt_dict=()
+	mirror_tbl=""
+	# 感觉ping也能并发地做
 	for cur_mirror in ${famous_mirrors[@]}; do
+		# 0% packet loss
+		# TODO: ping的次数
 		mid_rtt_val=`ping -c 2 $cur_mirror`
+		loss_rate=`echo $mid_rtt_val | grep -oP '([0-9\.]+)(?=% packet loss)'`
 		rtt_val=`\
 			echo $mid_rtt_val | grep 'rtt min/avg/max/mdev = [0-9\./]\+ ms$' | \
 			awk -F'/' '{ print $6 }'
 		`
 		# issue1: ping包比较小就不会携带rtt信息
-		#	例如 2 packets transmited, 0 received, ... , time 1022ms
+		#	例如 2 packets transmited, 0 received, 100% packet loss , time 1022ms
 		# issue2: ping失败后返回1触发set -e的满足条件，导致整个shellscript挂了
 		if [[ "$rtt_val" == "" ]]; then
-			rtt_val=`\
-				echo $mid_rtt_val | grep 'time [0-9]\+ms$' | \
-				awk -F' ' ' {print $2 } ' \
-			`
+			rtt_val=`echo $mid_rtt_val | grep -oP '(?<=time )([0-9\.]+)(?=ms)$'`
+			rtt_val=`echo "scale=6; $rtt_val/2" | bc`
 		fi
 		# 否则认为站点不可达
 		[[ "$rtt_val" == "" ]] && rtt_val=31415926535897932384626433
-		rtt+=("$rtt_val")
-		[ -n "$rtt_val" ] && rtt_dict[$rtt_val]="$cur_mirror"
+		mirror_tbl="$mirror_tbl""$cur_mirror $rtt_val $loss_rate\n"
 	done
-	rtt=`printf "%s\n" ${rtt[@]} | sort -n | head -n 1 | awk -F'\n' '{ print $1 }'`
-	# TODO: 这种写法总能保证可以选出一个镜像站，但没有看是否可达
-	# 导致后面做网络请求存在隐患
-	main_mirror=${rtt_dict[$rtt]}
+	# 策略:
+	#	时间小的优先
+	# 	时间一致的前提下选丢包率靠近零的
+	mirror_tbl=`echo "${mirror_tbl:0:-2}" | sort -n -t ' ' -k 2 -k 3 | head -n 1`
+	mirr_check=`echo "$mirror_tbl" | awk -F' ' '{ print $3 }'`
+	# 这种情况不如直接破罐破摔
+	if [[ "$mirr_check" > 90 ]]; then
+		res_mirror=""
+		return
+	fi
+	res_mirror=`echo "$mirror_tbl" | awk -F' ' '{ print $1 }'`
 	unset rtt_dict
 }
 
 
 function alter_src_via_mirror() {
-	# TODO: 自己建代理
+	# TODO: 或者自己建代理
 	select obj in "mirror url" "origin url"; do
 		[[ -n $obj ]] && break
 	done
 	# 如果本身处在gfw外就不需要用镜像源，也不需要更改plugman内的内容
-	if [[ $obj == 'origin url' ]]; then
-		url_prefix="$main_github"
-		res="" # 这里会影响后面去下 plugman
+	if [[ "$obj" == 'origin url' ]]; then
+		res_mirror="" # 这里会影响后面去下 plugman
 		return
 	fi
 	# 在这里设置是否需要镜像源
 	"_probe"
-	# TODO: 如果全部失败，需要换为源下载方式
-	res="https://$main_mirror"
-	url_prefix="$res/$main_github"
-	raw_github="$res/$raw_github"
-	echo "choice: $res" "$url_prefix" "$raw_github"
+	[[ "$res_mirror" == '' ]] && return
+	res_mirror="https://$res_mirror"
+	url_prefix="$res_mirror/$main_github"
+	raw_github="$res_mirror/$raw_github"
+	echo "choice: $res_mirror" "$url_prefix" "$raw_github"
 }
 
 # 入参:  压缩包名称 url
@@ -111,29 +123,31 @@ function _detect_font() {
 	tar_list=("$mono_zip" "$fira_zip" "$lxgw_zip")
 	for ((i=0; i<${#font_urls[@]}; i++)); do
 		payload="$fonts_dir${fontname_list[i]}/"
+		function unzipper() {
+			unzip -d "$payload" "${tar_list[i]}"
+			rm ${tar_list[i]} && unset payload
+		}
+
 		if [[ -d "$payload" ]]; then
-			# 只要字典序的哈希结果
-			# 这个 -df 太阴了
+			# 只要字典序的哈希结果，这个 -df 太阴了
 			ret=`\
 				find "$payload" -type f | sort -df | xargs sha256sum | \
 				awk -F' ' '{ printf $1"\n" }' | sha256sum | \
 				awk -F' ' '{ print $1 }' \
 			`
 			# 文件有而且齐全
-			[[ "$ret" == ${sha256_list[i]} ]] && continue
+			[[ "$ret" == "${sha256_list[i]}" ]] && continue
 		elif [[ -f "$fonts_dir${tar_list[i]}" ]]; then
 			# 不存在但有tar/zip
-			mkdir -p "$payload" && cd "$payload"
-			unzip ${tar_list[i]} && rm ${tar_list[i]}
-			cd ..
-			continue
+			# 这里可以并行着做啊
+			{"unzipper"}&
 		fi
-		mkdir -p "$payload" && cd "$payload"
-		# TODO: wget 改为向工作进程提交请求
-		#		下载完毕后再通知这里正常执行
-		wget ${font_urls[i]} && unzip ${tar_list[i]} && rm ${tar_list[i]}
-		cd ..
+		{
+			wget -P "$payload" "${font_urls[i]}" &> /dev/null
+			"unzipper"
+		}&
 	done
+	wait
 }
 
 function get_fonts() {
@@ -145,11 +159,10 @@ function get_fonts() {
 	curr_dir=`pwd`
 	mkdir -p "$fonts_dir" && cd "$fonts_dir"
 	link_list=("$jetbrain" "$firacode" "$lxgw")
-	# TODO: 此处调整为提交并发请求
 	"_detect_font" ${link_list[@]}
 	fc-cache -f -v
 	ret=`fc-list | grep -Ei "$lxgwname|$firaname|$mononame"`
-	if [[ "$ret" == '' || "$?" != 0 ]]; then
+	if [[ "$ret" == '' || $? != 0 ]]; then
 		echo "it seems that shell script can not fetch fonts properly..."
 		exit 1
 	fi
@@ -160,24 +173,25 @@ function get_fonts() {
 function get_color_scheme() {
 	# 加入判断，避免重复下载
 	[[ -d "$color_path" && -f "$color_path/gruvbox.vim" ]] && return
-	mkdir -p "$color_path"
-	wget "$raw_github/morhetz/gruvbox/master/colors/gruvbox.vim" \
-		-O "$color_path/gruvbox.vim"
+	{
+		wget -P "$color_path" \
+			"$raw_github/morhetz/gruvbox/$color_schash/colors/gruvbox.vim" &> /dev/null
+	}&
 }
 
 
 function get_plug_manager() {
 	[ -f "$plugman" ] && return # 加入判断，避免重复下载
-	curl -fLo "$plugman" --create-dirs \
-		 "$raw_github/junegunn/vim-plug/$plugman_hash/plug.vim"
-	# 不可将以下关系合并到上面的判断
-	[[ "$res" == '' ]] && return
-	# 需要备份plugman，防止意外. 后面自己删
-	cp "$plugman" "$plugman.backup"
-	# 注意下面的引号
-	# \ '^https://git::@github\.com', 'https://wget.la/https://github.com', '')
-	sed -i "s#'$main_github#'$res/$main_github#g" "$plugman"
-	# TODO: cat "$plugmain" | grep -i "$res/$main_github"
+	{
+		wget -P "$init_dir" "$raw_github/junegunn/vim-plug/$plugman_hash/plug.vim" &> /dev/null
+		[[ "$res_mirror" == '' ]] && return
+		cp "$plugman" "$plugman.backup"
+		# 不可将以下关系合并到上面的判断
+		# 需要备份plugman，防止意外. 后面自己删
+		# 注意下面的引号
+		# \ '^https://git::@github\.com', 'https://wget.la/https://github.com', '')
+		sed -i "s#'$main_github#'$url_prefix#g" "$plugman"
+	}&
 }
 
 
@@ -203,41 +217,40 @@ function set_font_conf() {
 		# 不重复定义
 		[[ "$check_dup" != '' ]] && return
 		# 否则插入到</fontconfig>所在的上一行
-		sed -i "/</fontconfig>/i\\$payload" "$fontconf"
+		# issue:
+		sed -i "/<\\/fontconfig>/i\\$payload" "$fontconf"
 		return
 	fi
-	mkdir -p "$tonfpath"
-	touch "$fontconf"
+	mkdir -p "$tonfpath" && touch "$fontconf"
 	# 需要额外补充
 	pre_process="\
 <?xml version='1.0'?>
 <!DOCTYPE fontconfig SYSTEM 'urn:fontconfig:fonts.dtd'>
 <fontconfig>
+$payload
 </fontconfig>\
 "
 	echo "$pre_process" > "$fontconf"
-	sed -i "/</fontconfig>/i\$payload" "$fontconf"
 }
 
 ####################################################################### shellscript入口
+# 准备创建管道文件
+# trap oops SIGINT SIGILL
 # 剩下就是自己进vim里面:PlugInstall
 # TODO: sync for mirror list
 "alter_src_via_mirror"
 
-# TODO: 并发下载
-# 信号捕获正常退出
-# 这里有 5  个网络请求
 "get_plug_manager"
 "get_color_scheme"
 "get_fonts"
 "set_font_conf"
-
 # 经过color后已经创建~/.vim/目录
-cp vimrc "$HOME/.vim/vimrc"
+## TODO: 确定vim版本而决定是否需要从头开始编译
+# vim --version
+cp './vimrc' "$HOME/.vim/vimrc"
 source "$HOME/.vim/vimrc"
 echo 'done...'
 
 ## 计算加载插件耗时
 # vim --startuptime vim.log
-## TODO: 确定vim版本而决定是否需要从头开始编译
-# vim --version
+

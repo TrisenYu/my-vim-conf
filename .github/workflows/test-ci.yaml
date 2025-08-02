@@ -1,3 +1,4 @@
+# Last modified at 2025年08月02日 星期六 19时01分34秒
 # TODO: READ hyperlink below.
 # https://stibel.icu/devops/ci/local-repository.html
 name: CI/CD validator designed for init.sh, test.sh and clean_vimview.py
@@ -8,31 +9,34 @@ jobs:
     runs-on: ubuntu-latest
     strategy:
       matrix:
-        payload: ["3\\n-1\\n2\\n"] # "3\\n-1\\n1\\n", 
+        payload: ["3\\n-1\\n2\\n"] # "3\\n-1\\n1\\n",
       max-parallel: 2
 
     steps:
       - name: 切分支
         uses: actions/checkout@main
+      - name: 依赖
+        run: sudo apt install bc coreutils
 
       - name: 运行 init.sh 并检查是否安装得当
         env:
           payload: ${{ matrix.payload }}
           # 加入重入测试
-          # sed -i 's/set -u/set -ux/g' init.sh
         run: |
+          sed -i 's/set -u/set -ux/g' init.sh
           sort --version
           echo -e "$payload" > tmp_inp.txt
           if [[ ! -s tmp_inp.txt ]]; then
             echo "invalid inp-file size was detected!"
             exit 1
-          fi 
+          fi
           bash init.sh < tmp_inp.txt && bash test.sh
-          bash init.sh < tmp_inp.txt
           bash init.sh < tmp_inp.txt && rm tmp_inp.txt
           cur_path=`pwd`
           cd "$HOME/.vim/" && ls autoload colors "$HOME/.fonts/"
           cd "$cur_path" && unset cur_path
+          cat "$HOME/autoload/plug.vim" | grep -in "github.com"
+          cat "$HOME/.config/fontconfig/fonts.conf" | grep -Ein "modified|lxgw|fira|jetbrains"
 
   python-remove-test:
     runs-on: ubuntu-latest
@@ -50,5 +54,5 @@ jobs:
             echo "123" > "$vimview/$file"
             touch -t 202001011145.14 "$vimview/$file"
           done
-          ls "$vimview" && python clean_vimview.py && ls "$vimview" 
+          ls "$vimview" && python clean_vimview.py && ls "$vimview"
           unset test_files vimview

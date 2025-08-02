@@ -4,5 +4,6 @@ view/*
 plugged/*
 colors/*
 tags
+vim.log
 
 

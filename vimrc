@@ -1,7 +1,7 @@
 " 不会可以看这个 https://yongfu.name/Learn-Vim/
 " 预计占用30MB
 " 需要解决这个问题
-set runtimepath+=~/.vim/autoload/
+set runtimepath+=$HOME/.vim/autoload/
 call plug#begin()
 	Plug 'preservim/nerdtree'					" 目录树
 	Plug 'preservim/nerdcommenter', {'on': []}	" 注释工具
@@ -11,39 +11,41 @@ call plug#begin()
 	Plug 'cohama/lexima.vim'					" 自动闭合括号
 	Plug 'rust-lang/rust.vim'
 	Plug 'preservim/tagbar'						" 层级目录显示
-	Plug 'boydos/emmet-vim'
+	Plug 'boydos/emmet-vim'						" xml, html 尖括号补全
 	Plug 'dense-analysis/ale'					" 语法错误检查
 call plug#end()
 
 let g:ycm_semantic_triggers = {
-	\ 'c': ['re!\w{2}'],
-	\ "cpp": ['re!\w{2}'],
-	\ "python": ['re!\w{2}'],
-	\ "rust": ['re!\w{2}'],
-	\ "java": ['re!\w{2}'],
-	\ "go": ['re!\w{2}'],
-	\ "erlang": ['re!\w{2}'],
-	\ "perl": ['re!\w{2}'],
-	\ "cs": ['re!\w{2}'],
-	\ "lua": ['re!\w{2}'],
-	\ "javascript": ['re!\w{2}'],
-	\ }
+\ 'c': ['re!\w{2}'],
+\ "cpp": ['re!\w{2}'],
+\ "python": ['re!\w{2}'],
+\ "rust": ['re!\w{2}'],
+\ "java": ['re!\w{2}'],
+\ "go": ['re!\w{2}'],
+\ "erlang": ['re!\w{2}'],
+\ "perl": ['re!\w{2}'],
+\ "cs": ['re!\w{2}'],
+\ "lua": ['re!\w{2}'],
+\ "javascript": ['re!\w{2}'],
+\ }
 let g:ycm_filetype_whitelist = {
-	\ "c": 1,
-	\ "cpp": 1,
-	\ "hpp": 1,
-	\ "cc": 1,
-	\ "cu": 1,
-	\ "h": 1,
-	\ "lua": 1,
-	\ "python": 1,
-	\ "go": 1,
-	\ "typescript": 1,
-	\ "sh": 1,
-	\ "zsh": 1,
-	\ "rust": 1,
-	\ "javascript": 1,
-	\ }
+\ "c": 1,
+\ "cpp": 1,
+\ "hpp": 1,
+\ "cc": 1,
+\ "cu": 1,
+\ "h": 1,
+\ "lua": 1,
+\ "python": 1,
+\ "go": 1,
+\ "typescript": 1,
+\ "sh": 1,
+\ "zsh": 1,
+\ "rust": 1,
+\ "javascript": 1,
+\ "cmake": 1,
+\ "make": 1,
+\ }
 " 语法关键字自动补全
 let g:ycm_seed_identifiers_with_sytanx = 1
 " 字符串和注释内可用自动补全
@@ -87,8 +89,10 @@ let g:ale_linters = {
 \   'c++': ['clang'],
 \   'c': ['clang'],
 \   'python': ['pylint'],
+\	'go': ['gofmt', 'golint', 'gopls', 'govet'],
 \}
 let g:ale_c_clangtidy_checks = ['-*', 'cppcoreguidelines-*']
+let g:ale_fix_on_save = 1
 
 autocmd FileType html,css,xml EmmetInstall
 
@@ -139,7 +143,7 @@ func Get_sign()
 	let sharp_list = [
 		\ 'sh', 'python', 
 		\ 'zsh', 'make', 
-		\ 'cmake'
+		\ 'cmake', 'yaml'
 	\ ]
 	for item in sharp_list
 		if &filetype == item
@@ -177,7 +181,8 @@ func Pad_header()
 	let header_comment .= sign.license.cloz."\n".addt
 	let header_comment .= sign."(C) All rights reserved. "
 	" TODO: 别人如果要用，邮箱难道还要到这个函数里面来改吗？
-	let header_comment .= "Author: ".br."kisfg@hotmail.com".ebr." in ".strftime("%Y").cloz."\n"
+	let header_comment .= "Author: ".br."kisfg@hotmail.com"
+	let header_comment .= ebr." in ".strftime("%Y").cloz."\n"
 	let header_comment .= sign."Created at ".strftime("%c").cloz."\n"
 	let header_comment .= sign."Last modified at ".strftime("%c").cloz."\n"
 	" TODO: 加 prompt 用于辅助构建，比如 cmake --help-command-list
@@ -206,13 +211,26 @@ func Update_info()
 		call append(0, sign.prefix.payload)
 	endif
 
-	" 更新后自动去除行末空格
+	" 更新后自动去除行末空格和空行
 	silent! %s/\s\+$//ge
+	silent! %s/^$\n\+\%$//ge
 	" TODO: 更新后似乎光标错位
 endfunc
 
-autocmd BufNewFile *.{c[cu],java,lua,[ch]pp,[ch],[hs]h,py,go,[jrt]s,html\=,xml},makefile,CMakeLists.txt exec "call Pad_header()"
-autocmd BufWritePre,filewritepre *.{c[cu],java,lua,[ch]pp,[ch],[hs]h,py,go,[jrt]s,html\=,xml},makefile,CMakeLists.txt exec "call Update_info()"
+autocmd BufNewFile 
+	\ *.{c[cu],java,lua,[ch]pp,[ch],[hs]h,py,go,[jrt]s,html\=,xml,yaml},makefile,CMakeLists.txt 
+	\ exec "call Pad_header()"
+autocmd BufWritePre,filewritepre 
+	\ *.{c[cu],java,lua,[ch]pp,[ch],[hs]h,py,go,[jrt]s,html\=,xml,yaml},makefile,CMakeLists.txt 
+	\ exec "call Update_info()" | silent mkview
+autocmd BufWinEnter 
+	\ *.{c[cu],java,lua,[ch]pp,[ch],[hs]h,py,go,[jrt]s,html\=,xml,yaml},makefile,CMakeLists.txt 
+	\ silent loadview
+
+" 这里来主动删掉
+autocmd BufWritePre vimrc silent exec "!python ~/.vim/clean_vimview.py -ra true"
+" 修改后自动修改
+autocmd! BufWritePost vimrc source %
 """ 自动命令配置
 " TODO: 检查插件是否存在，如果不存在则安装
 
@@ -224,13 +242,6 @@ autocmd BufReadPost * exec "call Ret_to_last_pos()"
 " 不会自动增加注释
 " TODO: 不过有时候也挺麻烦的，还是用一个键位来控制这个的使能吧
 autocmd Filetype * setlocal formatoptions-=c formatoptions-=r formatoptions-=o
-autocmd BufWritePre,fileWritePre *.{c[cu],java,lua,[ch]pp,[ch],[hs]h,py,go,[jrt]s,html\=,xml},makefile,CMakeLists.txt silent mkview
-autocmd BufWinEnter *.{c[cu],java,lua,[ch]pp,[ch],[hs]h,py,go,[jrt]s,html\=,xml},makefile,CMakeLists.txt silent loadview
-" 这里来主动删掉
-autocmd BufWritePre vimrc silent exec "!python ~/.vim/clean_vimview.py -ra true"
-
-
-
 "" 其它内置的配置选项
 filetype on
 filetype plugin on
@@ -253,7 +264,6 @@ set viminfo='1000,<999
 
 " 无需下发命令延时
 set notimeout
-
 set number relativenumber
 set mouse=a
 
@@ -267,7 +277,6 @@ set helplang=cn
 set langmenu=zh_CN.UTF-8
 
 set title
-
 set showcmd
 set showmode
 set ignorecase
@@ -293,6 +302,7 @@ set incsearch
 " set nowrap " 不自动折行
 set linebreak " 遇到特殊符号才折行
 syntax enable
+syntax on
 
 set tabstop=4
 set softtabstop=4
@@ -304,9 +314,8 @@ set noexpandtab
 
 " 总是显示状态行
 set laststatus=2
-" set completeopt-=preview
+set completeopt-=preview
 set textwidth=256
-
 
 " 显示不可见字符，并定制行尾空格、tab键显示符号
 " set list
@@ -316,7 +325,6 @@ set textwidth=256
 "		命令就不能开
 " ,space:␣, 空格多看着有点眼花
 " set listchars=tab:\+-,precedes:«,extends:»,nbsp:␣
-
 " 如果设置不兼容，就看不到切换模式时的命令
 " set nocompatible
 " 下面这个不应该出现，从最开始用vim就是在可视模式下包含光标。
