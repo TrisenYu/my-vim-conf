@@ -3,7 +3,7 @@
 # SPDX-LICENSE-IDENTIFIER: GPL2.0
 # (C) All rights reserved. Author: <kisfg@hotmail.com> in 2025
 # Created at 2025年07月06日 星期日 18时04分20秒
-# Last modified at 2025年08月02日 星期六 20时05分03秒
+# Last modified at 2025年08月02日 星期六 20时26分33秒
 # 我的评价是不如直接编程
 # TODO: 这么复杂的脚本居然没有getopts?
 set -u
@@ -75,7 +75,7 @@ function _probe() {
 		#	例如 2 packets transmited, 0 received, 100% packet loss , time 1022ms
 		# issue2: ping失败后返回1触发set -e的满足条件，导致整个shellscript挂了
 		if [[ "$rtt_val" == "" ]]; then
-			rtt_val=`echo "$mid_rtt_val" | grep -oP '(?<=time )([0-9\.]+)(?=ms)$'`
+			rtt_val=`echo "$mid_rtt_val" | grep -o ' [0-9\.]\+ms$' | awk -F'ms' '{ print $1 }'`
 			rtt_val=`echo "scale=6; $rtt_val/2" | bc`
 		fi
 		# 否则认为站点不可达
@@ -86,9 +86,9 @@ function _probe() {
 	#	时间小的优先
 	# 	时间一致的前提下选丢包率靠近零的
 	mirror_tbl=`echo "${mirror_tbl:0:-2}" | sort -n -t ' ' -k 2 -k 3 | head -n 1`
-	mirr_check=`echo "$mirror_tbl" | awk -F' ' '{ print $3 }' | awk -F'\n' '{ print $1 }'`
+	mirr_check=`echo -e "$mirror_tbl" | awk -F' ' '{ print $3 }' | awk -F"\n" '{ print $1 }'`
 	# 这种情况不如直接破罐破摔
-	if [[ "$mirr_check" > 90 ]]; then
+	if [[ "$mirr_check" -ge 90 ]]; then
 		res_mirror=""
 		return
 	fi
@@ -245,11 +245,15 @@ $payload
 "get_color_scheme"
 "get_fonts"
 "set_font_conf"
-# 经过color后已经创建~/.vim/目录
+
 ## TODO: 确定vim版本而决定是否需要从头开始编译
 # vim --version
-cp './vimrc' "$vimdir/vimrc"
-vim -u "$vimdir/vimrc" +PlugInstall! +wa!
+
+# 经过color后已经创建~/.vim/目录
+if [[ ! -s "$vimdir/vimrc" || `cat "$vimdir/vimrc" | sha256sum` != `sha256sum "./vimrc"` ]]; then
+	cp './vimrc' "$vimdir/vimrc"
+	vim -u "$vimdir/vimrc" +PlugInstall! +wa! &> /dev/null
+fi
 echo 'done...'
 
 ## 计算加载插件耗时
