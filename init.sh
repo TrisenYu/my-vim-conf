@@ -3,7 +3,7 @@
 # SPDX-LICENSE-IDENTIFIER: GPL2.0
 # (C) All rights reserved. Author: <kisfg@hotmail.com> in 2025
 # Created at 2025年07月06日 星期日 18时04分20秒
-# Last modified at 2025年08月03日 星期日 01时22分31秒
+# Last modified at 2025年08月07日 星期四 19时27分52秒
 # 我的评价是不如直接编程
 # TODO: 这么复杂的脚本居然没有getopts?
 #		感觉过于繁琐，还要在shellscript内验证参数
@@ -254,15 +254,35 @@ $payload
 
 
 function _cp_vimrc() {
-	cp "$curr_dir/vimrc" "$vimdir/vimrc"
-	vim -u "$vimdir/vimrc" +PlugInstall! +wa! &> /dev/null
+	vim_ver=`vim --version | grep -oP '(?<=VIM - Vi IMproved )([0-9\.]+)'`
+	if [[ "$vim_ver" < 9 ]]; then
+		# TODO:
+		# _clone_vim_src
+		# return
+		echo 'NNNNNNNNNNNNnnnnnnnnooooooo...'
+	fi
+	cp "$curr_dir/vimrc" "$vim_target"
+	cp "$curr_dir/clean_vimview.py" "$vimdir/clean_vimview.py"
+	vim -u "$vim_target" +PlugInstall! +wa! &> /dev/null
 }
 
 
 function _clone_vim_src() {
 	# TODO: 到哪个目录？
+	#		感觉最好是替换掉
 	#		要不要直接在init.sh调用这个下载安装脚本？不然量太大了
-	git clone --depth=2 --recursive "$url_prefix"
+	# deps: ruby-dev lua libperl-dev python3 python3-dev
+	git clone --depth=2 --recursive "$url_prefix/$vim_src_suf"
+	./configure \
+		--with-features=huge \
+		--prefix="$HOME/app/vim" \
+		--enable-fail-if-missing \
+		--enable-python3interp \
+		--enable-fontset \
+		--enable-rubyinterp \
+		--enable-perlinterp \
+		--with-python3-command=python3
+	make && make install
 }
 ####################################################################### shellscript入口
 # 准备创建管道文件
@@ -293,4 +313,3 @@ echo 'done...'
 
 ## 计算加载插件耗时
 # vim --startuptime vim.log
-

@@ -15,91 +15,110 @@ call plug#begin()
 	Plug 'dense-analysis/ale'					" 语法错误检查
 call plug#end()
 
-
-let g:ycm_semantic_triggers = {
-	\ 'c': ['re!\w{2}'],
-	\ "cpp": ['re!\w{2}'],
-	\ "python": ['re!\w{2}'],
-	\ "rust": ['re!\w{2}'],
-	\ "java": ['re!\w{2}'],
-	\ "go": ['re!\w{2}'],
-	\ "erlang": ['re!\w{2}'],
-	\ "perl": ['re!\w{2}'],
-	\ "cs": ['re!\w{2}'],
-	\ "lua": ['re!\w{2}'],
-	\ "javascript": ['re!\w{2}'],
-	\ }
-let g:ycm_filetype_whitelist = {
-	\ "c": 1,
-	\ "cpp": 1,
-	\ "hpp": 1,
-	\ "cc": 1,
-	\ "cu": 1,
-	\ "h": 1,
-	\ "lua": 1,
-	\ "python": 1,
-	\ "go": 1,
-	\ "typescript": 1,
-	\ "sh": 1,
-	\ "zsh": 1,
-	\ "rust": 1,
-	\ "javascript": 1,
-	\ "cmake": 1,
-	\ "make": 1,
-	\ }
 " 语法关键字自动补全
-let g:ycm_seed_identifiers_with_sytanx = 1
-" 字符串和注释内可用自动补全
-let g:ycm_complete_in_string = 1
-let g:ycm_complete_in_comments = 1
+let _plug_dir="$HOME/.vim/plugged"
+if filereadable(expand(_plug_dir."/ale/autoload/ale.vim"))
+	let g:ale_lint_on_text_changed = 'never'
+	let g:ale_completion_delay = 100 " ms
+	let g:ale_lint_on_enter = 0
+	let g:ale_sign_error = 'x'
+	let g:ale_sign_warning = '!'
+	" 这几个得提前去下才行
+	" 其他怎么办？
+	let g:ale_linters = {
+		\   'c++': ['clang'],
+		\   'c': ['clang'],
+		\   'python': ['pylint'],
+		\	'go': ['gofmt', 'golint', 'gopls', 'govet'],
+		\}
+	let g:ale_c_clangtidy_checks = ['-*', 'cppcoreguidelines-*']
+	let g:ale_fix_on_save = 1
+endif
 
-" 回车选中当前项
-" 有点复杂, 参见 github.com/ycm-core/YouCompleteMe/issues/232
-" 然而冇用
-" let g:ycm_key_list_select_completion = ['<TAB>']
-" let g:ycm_key_list_previous_completion = ['<S-TAB>']
-" let g:ycm_key_list_stop_completion = ['<CR>', '<C-y>']
+if filereadable(expand(_plug_dir."/YouCompleteMe/autoload/youcompleteme.vim"))
+	let g:ycm_semantic_triggers = {
+		\ 'c': ['re!\w{2}'],
+		\ "cpp": ['re!\w{2}'],
+		\ "python": ['re!\w{2}'],
+		\ "rust": ['re!\w{2}'],
+		\ "java": ['re!\w{2}'],
+		\ "go": ['re!\w{2}'],
+		\ "erlang": ['re!\w{2}'],
+		\ "perl": ['re!\w{2}'],
+		\ "cs": ['re!\w{2}'],
+		\ "lua": ['re!\w{2}'],
+		\ "javascript": ['re!\w{2}'],
+		\ }
+	let g:ycm_filetype_whitelist = {
+		\ "c": 1,
+		\ "cpp": 1,
+		\ "hpp": 1,
+		\ "cc": 1,
+		\ "cu": 1,
+		\ "h": 1,
+		\ "lua": 1,
+		\ "python": 1,
+		\ "go": 1,
+		\ "typescript": 1,
+		\ "sh": 1,
+		\ "zsh": 1,
+		\ "rust": 1,
+		\ "javascript": 1,
+		\ "cmake": 1,
+		\ "make": 1,
+		\ }
+	let g:ycm_seed_identifiers_with_sytanx = 1
+	" 字符串和注释内可用自动补全
+	let g:ycm_complete_in_string = 1
+	let g:ycm_complete_in_comments = 1
+	map <F3> :call Toggle_ycm() <CR>
+	" 回车选中当前项
+	" 有点复杂, 参见 github.com/ycm-core/YouCompleteMe/issues/232
+	" 然而冇用
+	" let g:ycm_key_list_select_completion = ['<TAB>']
+	" let g:ycm_key_list_previous_completion = ['<S-TAB>']
+	" let g:ycm_key_list_stop_completion = ['<CR>', '<C-y>']
+endif
 
+" 启动nerdTree并把光标留在第二个窗口
+if filereadable(expand(_plug_dir."/nerdtree/autoload/nerdtree.vim")) 
+	let g:NERDSpaceDelims			 = 1		" 在注释符号后加一个空格
+	let g:NERDCompactSexyComs		 = 1		" 紧凑排布多行注释
+	let g:NERDToggleCheckAllLines	 = 1		" 检查选中项是否有没被注释的项，有则全部注释
+	let g:NERDDefaultAlign			 = 'left'	" 逐行注释左对齐
+	let g:NERDCommentEmptyLines		 = 1		" 允许空行注释
+	let g:NERDTrimTrailingWhitespace = 1		" 取消注释时删除行尾空格
+	let g:NERDToggleCheckAllLines	 = 1		" 检查选中的行操作是否成功
+	let g:NERDTreeWinSize			 = 16		" 侧边栏大小
+	let g:NERDTreeHidden			 = 0		" 不隐藏.文件
+	autocmd VimEnter * :NERDTree | wincmd p
+	autocmd BufEnter * exec "call Config_NerdTree()"
+	map <silent> <C-&> :NERDTreeToggle<CR>
+endif
+
+if filereadable(expand(_plug_dir."/tarbar/autoload/tarbar.vim"))
+	nmap <F8> :TagbarToggle<CR>
+endif
+if filereadable(expand(_plug_dir."/emmet-vim/autoload/emmet.vim"))
+	let g:user_emmet_install_global = 0
+	let g:user_emmet_expandabbr_key = '<C-e>'
+	autocmd FileType html,css,xml EmmetInstall
+endif
 " 自动闭合
-let g:lexima_enable_basic_rules = 1
+if filereadable(expand(_plug_dir."/lexima.vim/autoload/lexima.vim"))
+	let g:lexima_enable_basic_rules = 1
+endif
 " RGB彩色括号
-let g:rainbow_active = 1
-
-let g:NERDSpaceDelims			 = 1		" 在注释符号后加一个空格
-let g:NERDCompactSexyComs		 = 1		" 紧凑排布多行注释
-let g:NERDToggleCheckAllLines	 = 1		" 检查选中项是否有没被注释的项，有则全部注释
-let g:NERDDefaultAlign			 = 'left'	" 逐行注释左对齐
-let g:NERDCommentEmptyLines		 = 1		" 允许空行注释
-let g:NERDTrimTrailingWhitespace = 1		" 取消注释时删除行尾空格
-let g:NERDToggleCheckAllLines	 = 1		" 检查选中的行操作是否成功
-let g:NERDTreeWinSize			 = 16		" 侧边栏大小
-
-let g:indent_guides_enable_on_vim_startup = 1
-
-let g:user_emmet_install_global = 0
-let g:user_emmet_expandabbr_key = '<C-e>'
-
-let g:ale_lint_on_text_changed = 'never'
-let g:ale_completion_delay = 100 " ms
-let g:ale_lint_on_enter = 0
-let g:ale_sign_error = 'x'
-let g:ale_sign_warning = '!'
-" 这几个得提前去下才行
-" 其他怎么办？
-let g:ale_linters = {
-	\   'c++': ['clang'],
-	\   'c': ['clang'],
-	\   'python': ['pylint'],
-	\	'go': ['gofmt', 'golint', 'gopls', 'govet'],
-	\}
-let g:ale_c_clangtidy_checks = ['-*', 'cppcoreguidelines-*']
-let g:ale_fix_on_save = 1
-
-autocmd FileType html,css,xml EmmetInstall
-
+if filereadable(expand(_plug_dir."/rainbow/autoload/rainbow.vim"))
+	let g:rainbow_active = 1
+endif
+if filereadable(expand(_plug_dir."/vim-indent-guides/autoload/indent_guides.vim"))
+	let g:indent_guides_enable_on_vim_startup = 1
+endif
 
 " TOFIX: 如果在非常大的项目里面(比如下载过插件后的这个仓库的目录下)用 youcompleteme 会巨卡，
 "	prompt: long latency vim youcompleteme
+" 
 " YouCompleteMe on and off with F3
 " thanks https://vi.stackexchange.com/a/36667
 func Toggle_ycm()
@@ -117,12 +136,11 @@ func Toggle_ycm()
         :echo "YCM off"
     endif
 endfunc
-map <F3> :call Toggle_ycm() <CR>
 
 
 " vimscript 要求函数名首字母大写
 func Config_NerdTree()
-	if winnr('$') == 1 && exists('b:NERDTree') && b:NERDTree.isTabTree()
+	if (winnr('$') == 1 && exists('b:NERDTree') && b:NERDTree.isTabTree())
 		call feedkeys(":quit\<CR>:\<BS>")
 	endif
 endfunc
@@ -155,6 +173,8 @@ func Get_sign()
 		return '-- '
 	elseif (&filetype == 'xml' || &filetype == 'html')
 		return "<--! "
+	elseif &filetype == 'dosbatch'
+		return ":: "
 	elseif &filetype != 'rust'
 		return '/// '
 	else
@@ -219,29 +239,32 @@ func Update_info()
 endfunc
 
 autocmd BufNewFile 
-	\ *.{c[cu],java,lua,[ch]pp,[ch],[hs]h,py,go,[jrt]s,html\=,xml,yaml},makefile,CMakeLists.txt 
+	\ *.{c[cu],java,lua,[ch]pp,[ch],[hs]h,py,go,[jrt]s,html\=,xml,ya\=ml,bat},makefile,CMakeLists.txt 
 	\ exec "call Pad_header()"
 autocmd BufWritePre,filewritepre 
-	\ *.{c[cu],java,lua,[ch]pp,[ch],[hs]h,py,go,[jrt]s,html\=,xml,yaml},makefile,CMakeLists.txt 
-	\ exec "call Update_info()" | silent mkview
-autocmd BufWinEnter 
-	\ *.{c[cu],java,lua,[ch]pp,[ch],[hs]h,py,go,[jrt]s,html\=,xml,yaml},makefile,CMakeLists.txt 
-	\ silent loadview
+	\ *.{c[cu],java,lua,[ch]pp,[ch],[hs]h,py,go,[jrt]s,html\=,xml,ya\=ml,bat},makefile,CMakeLists.txt 
+	\ exec "call Update_info()"
+
+" https://vim.fandom.com/wiki/Make_views_automatic
+autocmd BufWinLeave * 
+	\   if expand('%') != '' && &buftype !~ 'nofile'
+    \|      mkview
+    \|  endif
+autocmd BufWinEnter,BufRead *
+	\   if expand('%') != '' && &buftype !~ 'nofile'
+    \|     silent loadview 
+    \|  endif
 
 " 这里来主动删掉
-autocmd BufWritePre vimrc silent exec "!python ~/.vim/clean_vimview.py -ra true"
+if filereadable(expand("$HOME/.vim/clean_vimview.py"))
+	autocmd BufWritePre vimrc silent exec "!python ~/.vim/clean_vimview.py -ra true"
+endif
 " 修改后自动修改
-
 " TOFIX: 感觉打开vim卡卡的
 " autocmd! BufWritePost vimrc source %
 """ 自动命令配置
 
-" 启动nerdTree并把光标留在第二个窗口
-" TODO: 首先需要nerdtree下好
-if exists('NERDTree')
-	autocmd VimEnter * NERDTree | wincmd p
-	autocmd BufEnter * exec "call Config_NerdTree()"
-endif
+
 " 返回上一次对该文件的编辑位置
 autocmd BufReadPost * exec "call Ret_to_last_pos()"
 " 不会自动增加注释
@@ -254,8 +277,6 @@ filetype indent on
 
 " ctrl+A 为全选
 map <C-A> ggVGY
-map <silent> <C-&> :NERDTreeToggle<CR>
-nmap <F8> :TagbarToggle<CR>
 " 调整窗口的映射
 " TOFIX: 不过还是没有和tmux一样好用orz
 map <C-W><UP> <ESC><C-W>-
@@ -296,7 +317,6 @@ set noerrorbells
 
 " 没有这个比较辣眼睛
 set novisualbell
-
 
 " 移动光标遇到空行后不会重置到开头
 set nostartofline
