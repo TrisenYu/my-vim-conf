@@ -1,6 +1,8 @@
+" 第一次看到配置当script来写
+" 属实是大无语
+
 " 不会可以看这个 https://yongfu.name/Learn-Vim/
 " 预计占用30MB
-" 需要解决这个问题
 set runtimepath+=$HOME/.vim/autoload/
 call plug#begin()
 	Plug 'preservim/nerdtree'					" 目录树
@@ -13,6 +15,7 @@ call plug#begin()
 	Plug 'preservim/tagbar'						" 层级目录显示
 	Plug 'boydos/emmet-vim'						" xml, html 尖括号补全
 	Plug 'dense-analysis/ale'					" 语法错误检查
+	Plug 'vim-airline/vim-airline'				" status/tab line
 call plug#end()
 
 " 语法关键字自动补全
@@ -48,6 +51,7 @@ if filereadable(expand(_plug_dir."/YouCompleteMe/autoload/youcompleteme.vim"))
 		\ "cs": ['re!\w{2}'],
 		\ "lua": ['re!\w{2}'],
 		\ "javascript": ['re!\w{2}'],
+		\ "typescript": ['re!\w{2}'],
 		\ }
 	let g:ycm_filetype_whitelist = {
 		\ "c": 1,
@@ -59,11 +63,11 @@ if filereadable(expand(_plug_dir."/YouCompleteMe/autoload/youcompleteme.vim"))
 		\ "lua": 1,
 		\ "python": 1,
 		\ "go": 1,
-		\ "typescript": 1,
 		\ "sh": 1,
 		\ "zsh": 1,
 		\ "rust": 1,
 		\ "javascript": 1,
+		\ "typescript": 1,
 		\ "cmake": 1,
 		\ "make": 1,
 		\ }
@@ -114,6 +118,32 @@ if filereadable(expand(_plug_dir."/rainbow/autoload/rainbow.vim"))
 endif
 if filereadable(expand(_plug_dir."/vim-indent-guides/autoload/indent_guides.vim"))
 	let g:indent_guides_enable_on_vim_startup = 1
+endif
+
+if filereadable(expand(_plug_dir."/vim-airline/autoload/airline.vim"))
+	let g:airline_powerline_fonts = 0
+
+	let g:airline#extensions#tabline#enabled = 1
+	let g:airline#extensions#tabline#tab_nr_type = 1 " tab number
+	let g:airline#extensions#tabline#formatter = 'default'
+	let g:airline#extensions#tabline#show_tab_nr = 1
+	let g:airline#extensions#tabline#left_sep = ' '
+	let g:airline#extensions#tabline#left_alt_sep = '|'
+	let g:airline#extensions#tabline#buffer_nr_show = 1
+
+	let g:airline#extensions#whitespace#enabled = 0
+	silent! call airline#extensions#whitespace#disable()
+
+	let g:airline_theme="dark"
+	if !exists('g:airline_symbols')
+		let g:airline_symbols = {}
+	endif
+
+	let g:airline_symbols_ascii = 1
+	let g:airline_symbols.linenr = ' r:'
+	let g:airline_symbols.colnr = ' c:'
+	let g:airline_symbols.dirty = 'x'
+	let g:airline_symbols.readonly = '[RO]'
 endif
 
 " TOFIX: 如果在非常大的项目里面(比如下载过插件后的这个仓库的目录下)用 youcompleteme 会巨卡，
@@ -183,6 +213,7 @@ func Get_sign()
 endfunc
 
 func Pad_header()
+	" TODO: license name
 	let license = "SPDX-LICENSE-IDENTIFIER: GPL2.0"
 	let [header_comment, sign] = ['', Get_sign()]
 	" addtion, comment_ed email_bracket end_of_email_bracket
@@ -236,6 +267,11 @@ func Update_info()
 	" TODO: 似乎有光标错位的情况
 	silent! %s/\s\+$//ge
 	silent! %s/^$\n\+\%$//ge
+
+	if (&filetype == 'python')
+		" 空格全部替换为tab
+		silent! %s/    /	/ge
+	endif
 endfunc
 
 autocmd BufNewFile 
@@ -283,6 +319,14 @@ map <C-W><UP> <ESC><C-W>-
 map <C-W><DOWN> <ESC><C-W>+
 map <C-W><LEFT> <ESC><C-W>>
 map <C-W><RIGHT> <ESC><C-W><
+
+" 上一个标签页
+nnoremap <C-S-tab> :bp<CR>
+" 下一个标签页
+nnoremap <C-tab> :bn<CR>
+" ctrl+x 关闭当前buffer
+nnoremap <C-X> :bd<CR>
+
 
 colorscheme gruvbox
 " color morning
@@ -333,16 +377,20 @@ syntax on
 set tabstop=4
 set softtabstop=4
 set shiftwidth=4
-set autoindent
 set cindent
 set smarttab
+" 不管如何默认缩进
 set noexpandtab
+set autoindent
 
 " 总是显示状态行
 set laststatus=2
 set completeopt-=preview
 set textwidth=256
 
+" 终端大小放1行
+set termwinsize="2*0"
+set showtabline=2
 " 显示不可见字符，并定制行尾空格、tab键显示符号
 " set list
 " u+2423
@@ -353,8 +401,6 @@ set textwidth=256
 " set listchars=tab:\+-,precedes:«,extends:»,nbsp:␣
 " 如果设置不兼容，就看不到切换模式时的命令
 " set nocompatible
-" 下面这个不应该出现，从最开始用vim就是在可视模式下包含光标。
-" set selection=exclusive
 
 set selectmode=mouse,key
 set t_Co=256 " 二百五十六色支持
