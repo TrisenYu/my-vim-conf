@@ -3,7 +3,7 @@
 # SPDX-LICENSE-IDENTIFIER: GPL2.0
 # (C) All rights reserved. Author: <kisfg@hotmail.com> in 2025
 # Created at 2025年07月06日 星期日 18时04分20秒
-# Last modified at 2025年08月12日 星期二 21时44分13秒
+# Last modified at 2025年08月12日 星期二 21时55分16秒
 #
 # 我的评价是不如直接编程
 # TODO: 这么复杂的脚本居然没有getopts?
@@ -113,7 +113,7 @@ function _probe() {
 		tot_wget=`echo "$tot_wget+$interval" | bc`
 		tot_ping=`echo "$tot_ping+$rtt_val" | bc`
 	done
-
+	[[ "mirr_str" == "" ]] && return
 	mirror_tbl=(`echo -e "${mirr_str:0:-2}" | sort -n -t ' ' -k2 -k3 -k4 | tr "\n" ' '`)
 	mirr_check=`echo -e "$mirror_tbl" | awk -F' ' '{ print $3 }' | head -n 1`
 	choice_val=0
@@ -301,6 +301,12 @@ function _clone_vim_src() {
 	make && make install
 }
 
+function setup_ycm() {
+	# 需要 cmake
+	cd "$ycm_dir"
+	git submodule update --init --recursive
+	python3 install.py
+}
 
 function _cp_vimrc() {
 	vim_ver=`vim --version | grep -oP '(?<=VIM - Vi IMproved )([0-9\.]+)'`
@@ -313,12 +319,9 @@ function _cp_vimrc() {
 	cp "$curr_dir/vimrc" "$vim_target"
 	cp "$curr_dir/clean_vimview.py" "$vimdir/clean_vimview.py"
 	vim -u "$vim_target" +PlugInstall! +wa!
+	"setup_ycm"
 }
 
-function setup_ycm() {
-	# 需要 cmake
-	cd "$ycm_dir" && python3 install.py
-}
 
 function check_sys() {
 	if [[ "`uname -o`" != "GNU/Linux" ]]; then
@@ -332,7 +335,6 @@ function check_sys() {
 "alter_src_via_mirror"
 "get_plug_manager"
 "get_color_scheme"
-"setup_ycm"
 
 if [[ "$font_key" = true ]]; then
 	"get_fonts"

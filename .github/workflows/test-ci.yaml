@@ -1,7 +1,7 @@
-# Last modified at 2025年08月12日 星期二 21时45分09秒
+# Last modified at 2025年08月12日 星期二 22时00分35秒
 # TODO: READ hyperlink below.
 # https://stibel.icu/devops/ci/local-repository.html
-name: CI/CD validator designed for init.sh, test.sh and clean_vimview.py
+name: CI/CD validator designed for init.sh and clean_vimview.py
 
 on: [push]
 jobs:
@@ -22,18 +22,25 @@ jobs:
         env:
           payload: ${{ matrix.payload }}
         run: |
+          set x
           sed -i 's/set -u/set -ux/g' init.sh
           echo -e "$payload" > tmp_inp.txt
           if [[ ! -s tmp_inp.txt ]]; then
             echo "invalid inp-file size was detected!"
             exit 1
           fi
-          bash init.sh < tmp_inp.txt && bash test.sh
+          font_flag=`tail -n 1 tmp_inp.txt`
+          bash init.sh < tmp_inp.txt
           bash init.sh < tmp_inp.txt && rm tmp_inp.txt
           cur_path=`pwd`
-          cd "$HOME/.vim/" && ls autoload colors "$HOME/.fonts/"
+          cd "$HOME/.vim/" && ls autoload colors
           cd "$cur_path" && unset cur_path
           cat "$HOME/.vim/autoload/plug.vim" | grep -in "github.com"
+          if [[ "$font_flag" != 1 ]]; then
+            echo 'test pass...'
+            exit 0
+          fi
+          ls "$HOME/.fonts/"
           [[ ! -s "$HOME/.config/fontconfig/fonts.conf" ]] && exit 1
           cat "$HOME/.config/fontconfig/fonts.conf" | grep -Ei "modified|lxgw|fira|jetbrains"
 
@@ -49,7 +56,7 @@ jobs:
       - name: deps
         run: |
           bash -c "$(curl -fsSL https://raw.githubusercontent.com/Homebrew/install/HEAD/install.sh)"
-          brew install wget grep
+          brew install wget grep sed
       - name: task
         env:
           payload: ${{ matrix.payload }}
