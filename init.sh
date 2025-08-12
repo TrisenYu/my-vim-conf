@@ -3,7 +3,7 @@
 # SPDX-LICENSE-IDENTIFIER: GPL2.0
 # (C) All rights reserved. Author: <kisfg@hotmail.com> in 2025
 # Created at 2025年07月06日 星期日 18时04分20秒
-# Last modified at 2025年08月09日 星期六 21时52分46秒
+# Last modified at 2025年08月12日 星期二 21时38分08秒
 #
 # 我的评价是不如直接编程
 # TODO: 这么复杂的脚本居然没有getopts?
@@ -18,9 +18,12 @@ vimdir="$HOME/.vim"
 fonts_dir="$HOME/.fonts/"
 color_path="$vimdir/colors"
 init_dir="$vimdir/autoload"
+ycm_dir="$vimdir/plugged/YouCOmpleteMe/"
 vim_target="$vimdir/vimrc"
 plugman="$init_dir/plug.vim"
 
+ping_dev='mdev'
+font_key=false
 # file-hash
 vimrc_hash=`sha256sum "$curr_dir/vimrc" | awk -F' ' '{ print $1 }'`
 # github
@@ -35,10 +38,12 @@ vim_src_suf="vim/vim.git"
 mononame='JetBrainsMono-2.304'
 firaname='Fira_Code_v6.2'
 lxgwname='lxgw-wenkai-v1.520'
+maplname='MapleMonoNormal-TTF'
 # TODO: 要不直接附在这个仓库作为assets算了
 mono_zip="$mononame.zip"
 fira_zip="$firaname.zip"
 lxgw_zip="$lxgwname.zip"
+mapl_zip="$maplname.zip"
 sha256_list=(
 	'b20a708bfe76897bd4ad1e07521c657aca8f6ad0b07c5c13a9436969fb96a6ca'
 	'f80cbcaa8e827d2d0f693cc2188be746caa7d641ac7db6dece1cd49c1eec343a'
@@ -62,14 +67,12 @@ famous_mirrors=(
 	# https://cdn.jsdelivr.net/gh/ github-repository-suffix
 )
 
-
 ########################################################## 函数定义
 function help() {
 	cat << END_OF_LINE
 辅助配置vim的shellscript
 END_OF_LINE
 }
-
 
 # TODO: 搞成配置
 ping_times=3
@@ -84,9 +87,10 @@ function _probe() {
 	for cur_mirr in ${famous_mirrors[@]}; do
 		# TODO: ping和wget也并发
 		mid_rtt_val=`ping -c $ping_times $cur_mirr`
+		[[ "$?" != 0 ]] && continue
 		loss_rate=`echo "$mid_rtt_val" | grep -oP '([0-9\.]+)(?=% packet loss)'`
 		rtt_val=`\
-			echo "$mid_rtt_val" | grep 'rtt min/avg/max/mdev = [0-9\./]\+ ms$' | \
+			echo "$mid_rtt_val" | grep " min/avg/max/$ping_dev = [0-9\\./]\\+ ms\$" | \
 			awk -F'/' '{ print $6 }'
 		`
 		if [[ "$rtt_val" == "" ]]; then
@@ -94,13 +98,13 @@ function _probe() {
 				echo "$mid_rtt_val" | grep -o ' [0-9\.]\+ms$' | \
 				awk -F'ms' '{ print $1 }'\
 			`
-			rtt_val=`echo "scale=6;$rtt_val/$ping_times" | bc`
+			[[ "$rtt_val" != "" ]] && rtt_val=`echo "scale=6;$rtt_val/$ping_times" | bc`
 		fi
 		# 否则认为站点不可达
 		[[ "$rtt_val" == "" ]] && rtt_val=$inf_val
 
 		st_time=`date +%s.%N`
-		time $(wget "https://$cur_mirr/$get_self" -O - &> /dev/null)
+		wget "https://$cur_mirr/$get_self" -O - &> /dev/null
 		ret_num=$?
 		ed_time=`date +%s.%N`
 		interval=`echo "scale=9; $ed_time-$st_time" | bc`
@@ -131,9 +135,15 @@ function _probe() {
 
 function alter_src_via_mirror() {
 	# TODO: 或者自己建代理
-	select obj in "mirror url" "origin url"; do
+	select obj in 'mirror url' 'origin url'; do
 		[[ -n $obj ]] && break
 	done
+	select can_get_font in 'need fonts' 'not need'; do
+		[[ -n $can_get_font ]] && break
+	done
+	if [[ "$can_get_font" == 'need fonts' ]]; then
+		font_key=true
+	fi
 	# 如果本身处在gfw外就不需要用镜像源，也不需要更改plugman内的内容
 	if [[ "$obj" == 'origin url' ]]; then
 		res_mirror=""
@@ -153,8 +163,8 @@ function alter_src_via_mirror() {
 function _detect_font() {
 	mkdir -p "$fonts_dir" && cd "$fonts_dir"
 	font_urls=($@)
-	fontname_list=("$mononame" "$firaname" "$lxgwname")
-	tar_list=("$mono_zip" "$fira_zip" "$lxgw_zip")
+	fontname_list=("$mononame" "$firaname" "$lxgwname" "$maplname")
+	tar_list=("$mono_zip" "$fira_zip" "$lxgw_zip" "$mapl_zip")
 	for ((i=0; i<${#font_urls[@]}; i++)); do
 		payload="$fonts_dir${fontname_list[i]}/"
 		function unzipper() {
@@ -192,7 +202,8 @@ function get_fonts() {
 	jetbrain="$url_prefix/JetBrains/JetBrainsMono/$release_path/v2.304/$mono_zip"
 	firacode="$url_prefix/tonsky/FiraCode/$release_path/6.2/$fira_zip"
 	lxgw="$url_prefix/lxgw/LxgwWenkai/$release_path/v1.520/$lxgw_zip"
-	link_list=("$jetbrain" "$firacode" "$lxgw")
+	mapl="$url_prefix/subframe7536/maple-font/$release_path/v7.5/$mapl_zip"
+	link_list=("$jetbrain" "$firacode" "$lxgw" "$mapl")
 
 	"_detect_font" ${link_list[@]}
 	fc-cache -fv
@@ -303,14 +314,34 @@ function _cp_vimrc() {
 	cp "$curr_dir/clean_vimview.py" "$vimdir/clean_vimview.py"
 	vim -u "$vim_target" +PlugInstall! +wa!
 }
+
+function setup_ycm() {
+	# 需要 cmake
+	cd "$ycm_dir" && python3 install.py
+}
+
+function check_sys() {
+	if [[ "`uname -o`" != "GNU/Linux" ]]; then
+		ping_dev='stddev'
+	fi
+}
 ####################################################################### shellscript入口
 # 准备创建管道文件
 # TODO: auto sync for mirror list
+"check_sys"
 "alter_src_via_mirror"
 "get_plug_manager"
 "get_color_scheme"
-"get_fonts"
-"set_font_conf"
+"set_up_ycm"
+
+if [[ "$font_key" = true ]]; then
+	"get_fonts"
+	"set_font_conf"
+else
+	sed -i 's/set guifont=/" set guifont=/g' "$curr_dir/vimrc"
+	# 重算
+	vimrc_hash=`sha256sum "$curr_dir/vimrc" | awk -F' ' '{ print $1 }'`
+fi
 
 ## TODO: 确定vim版本而决定是否需要从头开始编译，并编写可用的编译脚本
 # vim --version

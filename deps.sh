@@ -3,7 +3,7 @@
 # SPDX-LICENSE-IDENTIFIER: GPL2.0
 # (C) All rights reserved. Author: <kisfg@hotmail.com> in 2025
 # Created at 2025年07月22日 星期二 15时40分07秒
-# Last modified at 2025年08月09日 星期六 22时41分15秒
+# Last modified at 2025年08月10日 星期日 01时05分53秒
 
 pkg_man=''
 _update=''
@@ -50,10 +50,18 @@ function check_packman() {
 # 安装一些必要的软件
 function install_deps() {
 	# 凡事先更新
+	# TODO: 需要保证是root权限
 	`$pkg_man $_update`
 	`$pkg_man $_append cmake make python wget curl zsh git llvm`
+	`$pkg_man $_append fctix5-mozc fctix5`
 	# 还有网络之类的软件
 	# 应该马上视情况安装 oh-my-zsh
+}
+
+function setup_input_meth() {
+	# TODO: 如果找不到再去做这个操作
+	payload="GTK_IM_MODULE=fcitx\nQT_IM_MODULE=fcitx\nXMODIFIERS=@im=fcitx\n"
+	echo -e "$payload" >> "$HOME/.zshrc"
 }
 
 function setup_shell() {

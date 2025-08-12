@@ -1,4 +1,4 @@
-# Last modified at 2025年08月03日 星期日 01时17分06秒
+# Last modified at 2025年08月12日 星期二 21时21分49秒
 # TODO: READ hyperlink below.
 # https://stibel.icu/devops/ci/local-repository.html
 name: CI/CD validator designed for init.sh, test.sh and clean_vimview.py
@@ -9,7 +9,7 @@ jobs:
     runs-on: ubuntu-latest
     strategy:
       matrix:
-        payload: ["3\\n-1\\n1\\n","3\\n-1\\n2\\n"]
+        payload: ["3\\n-1\\n1\\n1\\n", "3\\n-1\\n2\\n1\\n", "3\\n-1\\n1\\n2\\n", "3\\n-1\\n2\\n2\\n"]
       max-parallel: 2
 
     steps:
@@ -36,6 +36,32 @@ jobs:
           cat "$HOME/.vim/autoload/plug.vim" | grep -in "github.com"
           [[ ! -s "$HOME/.config/fontconfig/fonts.conf" ]] && exit 1
           cat "$HOME/.config/fontconfig/fonts.conf" | grep -Ei "modified|lxgw|fira|jetbrains"
+
+  mac-test:
+    runs-on: macos-latest
+    strategy:
+      matrix:
+        payload: ["3\\n-1\\n1\\n2\\n", "3\\n-1\\n2\\n2\\n"]
+      max-parallel: 2
+    steps:
+      - name: setup-repo
+        uses: actions/checkout@main
+      - name: deps
+        run: |
+          set -x
+          bash -c "$(curl -fsSL https://raw.githubusercontent.com/Homebrew/install/HEAD/install.sh)"
+          brew install wget grep
+      - name: task
+        env:
+          payload: ${{ matrix.payload }}
+        run: |
+          sed -i 's/set -u/set -ux/g' init.sh
+          echo -e "$payload" > tmp_inp.txt
+          if [[ ! -s tmp_inp.txt ]]; then
+            echo "invalid inp-file size was detected!"
+            exit 1
+          fi
+          zsh init.sh < tmp_inp.txt
 
   python-remove-test:
     runs-on: ubuntu-latest

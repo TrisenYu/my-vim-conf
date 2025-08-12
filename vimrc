@@ -16,6 +16,7 @@ call plug#begin()
 	Plug 'boydos/emmet-vim'						" xml, html 尖括号补全
 	Plug 'dense-analysis/ale'					" 语法错误检查
 	Plug 'vim-airline/vim-airline'				" status/tab line
+	Plug 'puremourning/vimspector'				" realtime-debug
 call plug#end()
 
 " 语法关键字自动补全
@@ -101,7 +102,8 @@ if filereadable(expand(_plug_dir."/nerdtree/autoload/nerdtree.vim"))
 endif
 
 if filereadable(expand(_plug_dir."/tarbar/autoload/tarbar.vim"))
-	nmap <F8> :TagbarToggle<CR>
+	" 换为 F1
+	nmap <F1> :TagbarToggle<CR>
 endif
 if filereadable(expand(_plug_dir."/emmet-vim/autoload/emmet.vim"))
 	let g:user_emmet_install_global = 0
@@ -144,6 +146,26 @@ if filereadable(expand(_plug_dir."/vim-airline/autoload/airline.vim"))
 	let g:airline_symbols.colnr = ' c:'
 	let g:airline_symbols.dirty = 'x'
 	let g:airline_symbols.readonly = '[RO]'
+endif
+
+" 这个调试插件需要配置「调试适配器, Debug Adapter, DA」以联通vimspector和实际的调试器
+" 配置只需要遵循微软的 DA Protocol, DAP 就行。 
+" https://microsoft.github.io/debug-adapter-protocol/overview
+" 
+if filereadable(expand(_plug_dir.'/vimspector/autoload/vimspector.vim'))
+	nnoremap <leader>db :call vimspector#Launch()<CR>
+	nnoremap <leader>dR :call vimspector#Reset()<CR>
+	nnoremap <leader>dc :call vimspector#Continue()<CR>
+	nnoremap <Leader>dk :call vimspector#ToggleBreakpoint()<CR>
+	nnoremap <Leader>dK :call vimspector#ClearBreakpoints()<CR>
+	" restart 
+	nmap <Leader>dr <Plug>VimspectorRestart 
+	" skip
+	nmap <Leader>ds <Plug>VimspectorStepOut
+	" into
+	nmap <Leader>di <Plug>VimspectorStepInto
+	" over
+	nmap <Leader>do <Plug>VimspectorStepOver
 endif
 
 " TOFIX: 如果在非常大的项目里面(比如下载过插件后的这个仓库的目录下)用 youcompleteme 会巨卡，
@@ -202,7 +224,7 @@ func Get_sign()
 	if &filetype == 'lua'
 		return '-- '
 	elseif (&filetype == 'xml' || &filetype == 'html')
-		return "<--! "
+		return "<!-- "
 	elseif &filetype == 'dosbatch'
 		return ":: "
 	elseif &filetype != 'rust'
@@ -224,7 +246,7 @@ func Pad_header()
 		let header_comment .= "#!/usr/bin/env ".&filetype."\n"
 		let header_comment .= "# -*- coding: utf-8 -*-"."\n"
 	elseif (&filetype == 'xml' || &filetype == 'html')
-		" xml 尖括号冲突
+		" xml 似乎存在尖括号冲突
 		let [cloz, br, ebr] = [' -->', '{', '}']
 	else
 		let addt = sign."\n"
@@ -283,13 +305,13 @@ autocmd BufWritePre,filewritepre
 
 " https://vim.fandom.com/wiki/Make_views_automatic
 autocmd BufWinLeave * 
-	\   if expand('%') != '' && &buftype !~ 'nofile'
-    \|      mkview
-    \|  endif
+	\	if expand('%') != '' && &buftype !~ 'nofile'
+    \|		mkview
+    \|	endif
 autocmd BufWinEnter,BufRead *
-	\   if expand('%') != '' && &buftype !~ 'nofile'
-    \|     silent loadview 
-    \|  endif
+	\	if expand('%') != '' && &buftype !~ 'nofile'
+    \|		silent loadview 
+    \|	endif
 
 " 这里来主动删掉
 if filereadable(expand("$HOME/.vim/clean_vimview.py"))
@@ -319,6 +341,9 @@ map <C-W><UP> <ESC><C-W>-
 map <C-W><DOWN> <ESC><C-W>+
 map <C-W><LEFT> <ESC><C-W>>
 map <C-W><RIGHT> <ESC><C-W><
+
+" <leader> <=> \
+nnoremap <leader>$ :term<CR>
 
 " 上一个标签页
 nnoremap <C-S-tab> :bp<CR>
@@ -405,9 +430,9 @@ set showtabline=2
 set selectmode=mouse,key
 set t_Co=256 " 二百五十六色支持
 
-if has("gui_gtk2")
+if has("unix")
 	set guifont=Fira\ Code\ Medium\ 12,JetBrains\ Mono\ Medium\ 12
-elseif (has("gui_macvim") || has("gui_win32"))
+elseif has("win32") || has("win64") || has("mac")
 	set guifont=Fira_Code_Medium:h12,JetBrains_Mono_Medium:h12
 endif
 	
