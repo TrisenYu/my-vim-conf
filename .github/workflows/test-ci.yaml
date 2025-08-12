@@ -1,4 +1,4 @@
-# Last modified at 2025年08月12日 星期二 21时21分49秒
+# Last modified at 2025年08月12日 星期二 21时45分09秒
 # TODO: READ hyperlink below.
 # https://stibel.icu/devops/ci/local-repository.html
 name: CI/CD validator designed for init.sh, test.sh and clean_vimview.py
@@ -48,14 +48,13 @@ jobs:
         uses: actions/checkout@main
       - name: deps
         run: |
-          set -x
           bash -c "$(curl -fsSL https://raw.githubusercontent.com/Homebrew/install/HEAD/install.sh)"
           brew install wget grep
       - name: task
         env:
           payload: ${{ matrix.payload }}
         run: |
-          sed -i 's/set -u/set -ux/g' init.sh
+          set -x
           echo -e "$payload" > tmp_inp.txt
           if [[ ! -s tmp_inp.txt ]]; then
             echo "invalid inp-file size was detected!"

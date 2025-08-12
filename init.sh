@@ -3,7 +3,7 @@
 # SPDX-LICENSE-IDENTIFIER: GPL2.0
 # (C) All rights reserved. Author: <kisfg@hotmail.com> in 2025
 # Created at 2025年07月06日 星期日 18时04分20秒
-# Last modified at 2025年08月12日 星期二 21时38分08秒
+# Last modified at 2025年08月12日 星期二 21时44分13秒
 #
 # 我的评价是不如直接编程
 # TODO: 这么复杂的脚本居然没有getopts?
@@ -332,7 +332,7 @@ function check_sys() {
 "alter_src_via_mirror"
 "get_plug_manager"
 "get_color_scheme"
-"set_up_ycm"
+"setup_ycm"
 
 if [[ "$font_key" = true ]]; then
 	"get_fonts"
