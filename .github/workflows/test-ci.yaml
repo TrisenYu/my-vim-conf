@@ -1,4 +1,4 @@
-# Last modified at 2025年08月12日 星期二 22时27分02秒
+# Last modified at 2025年08月12日 星期二 22时33分07秒
 # TODO: READ hyperlink below.
 # https://stibel.icu/devops/ci/local-repository.html
 name: CI/CD validator designed for init.sh and clean_vimview.py
@@ -54,13 +54,9 @@ jobs:
       - name: setup-repo
         uses: actions/checkout@main
       - name: deps
-        # echo 'export PATH="/opt/homebrew/opt/gnu-sed/libexec/gnubin:$PATH"' >> ~/.zprofile
-        # echo 'export PATH="/opt/homebrew/opt/grep/libexec/gnubin:$PATH"' >> ~/.zprofile
         run: |
           bash -c "$(curl -fsSL https://raw.githubusercontent.com/Homebrew/install/HEAD/install.sh)"
-          brew install wget grep gnu-sed cmake
-          echo 'export PATH="/opt/homebrew/opt/gnu-sed/libexec/gnubin:$PATH"' >> ~/.zshrc
-          echo 'export PATH="/opt/homebrew/opt/grep/libexec/gnubin:$PATH"' >> ~/.zshrc
+          brew install wget grep gnu-sed cmake perl
 
       - name: task
         env:

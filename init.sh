@@ -3,7 +3,7 @@
 # SPDX-LICENSE-IDENTIFIER: GPL2.0
 # (C) All rights reserved. Author: <kisfg@hotmail.com> in 2025
 # Created at 2025年07月06日 星期日 18时04分20秒
-# Last modified at 2025年08月12日 星期二 22时19分31秒
+# Last modified at 2025年08月12日 星期二 22时30分08秒
 #
 # 我的评价是不如直接编程
 # TODO: 这么复杂的脚本居然没有getopts?
@@ -24,7 +24,10 @@ plugman="$init_dir/plug.vim"
 
 ping_dev='mdev'
 font_key=false
+
 gsed='sed'
+ggrep='grep'
+
 # file-hash
 vimrc_hash=`sha256sum "$curr_dir/vimrc" | awk -F' ' '{ print $1 }'`
 # github
@@ -90,14 +93,14 @@ function _probe() {
 		# TODO: ping和wget也并发
 		mid_rtt_val=`ping -c $ping_times $cur_mirr`
 		[[ "$?" != 0 ]] && continue
-		loss_rate=`echo "$mid_rtt_val" | grep -oP '([0-9\.]+)(?=% packet loss)'`
+		loss_rate=`echo "$mid_rtt_val" | $ggrep -oP '([0-9\.]+)(?=% packet loss)'`
 		rtt_val=`\
-			echo "$mid_rtt_val" | grep " min/avg/max/$ping_dev = [0-9\\./]\\+ ms\$" | \
+			echo "$mid_rtt_val" | $ggrep " min/avg/max/$ping_dev = [0-9\\./]\\+ ms\$" | \
 			awk -F'/' '{ print $6 }'
 		`
 		if [[ "$rtt_val" == "" ]]; then
 			rtt_val=`\
-				echo "$mid_rtt_val" | grep -o ' [0-9\.]\+ms$' | \
+				echo "$mid_rtt_val" | $ggrep -o ' [0-9\.]\+ms$' | \
 				awk -F'ms' '{ print $1 }'\
 			`
 			[[ "$rtt_val" != "" ]] && rtt_val=`echo "scale=6;$rtt_val/$ping_times" | bc`
@@ -209,7 +212,7 @@ function get_fonts() {
 
 	"_detect_font" ${link_list[@]}
 	fc-cache -fv
-	ret=`fc-list | grep -Ei "$lxgwname|$firaname|$mononame"`
+	ret=`fc-list | $ggrep -Ei "$lxgwname|$firaname|$mononame"`
 	if [[ "$ret" == '' || $? != 0 ]]; then
 		echo "it seems that shell script can not fetch fonts properly..."
 		exit 1
@@ -264,7 +267,7 @@ function set_font_conf() {
 	if [ -f "$fontconf" ]; then
 		check_dup=`\
 			cat "$fontconf" | \
-			grep -Ei "fira code medium|lxgw wenkai mono|jetbrains mono" \
+			$ggrep -Ei "fira code medium|lxgw wenkai mono|jetbrains mono" \
 		`
 		# 不重复定义
 		[[ "$check_dup" != '' ]] && return
@@ -311,7 +314,7 @@ function setup_ycm() {
 }
 
 function _cp_vimrc() {
-	vim_ver=`vim --version | grep -oP '(?<=VIM - Vi IMproved )([0-9\.]+)'`
+	vim_ver=`vim --version | $ggrep -oP '(?<=VIM - Vi IMproved )([0-9\.]+)'`
 	if [[ "$vim_ver" < 9 ]]; then
 		# TODO:
 		# "_clone_vim_src"
@@ -330,6 +333,7 @@ function check_sys() {
 	if [[ "`uname -o`" == "Darwin" ]]; then
 		ping_dev='stddev'
 		gsed='gsed'
+		ggrep='ggrep'
 	fi
 }
 ####################################################################### shellscript入口
