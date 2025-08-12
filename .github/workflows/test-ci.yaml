@@ -1,4 +1,4 @@
-# Last modified at 2025年08月12日 星期二 22时07分38秒
+# Last modified at 2025年08月12日 星期二 22时27分02秒
 # TODO: READ hyperlink below.
 # https://stibel.icu/devops/ci/local-repository.html
 name: CI/CD validator designed for init.sh and clean_vimview.py
@@ -16,7 +16,7 @@ jobs:
       - name: 切分支
         uses: actions/checkout@main
       - name: 安依赖
-        run: sudo apt install bc coreutils # libncurses5-dev libgnome2-dev libgnomeui-dev libgtk2.0-dev libatk1.0-dev libbonoboui2-dev libcairo2-dev libx11-dev libxpm-dev libxt-dev python-dev python3-dev ruby-dev lua5.1 liblua5.1-dev libperl-dev git
+        run: sudo apt install bc coreutils cmake # libncurses5-dev libgnome2-dev libgnomeui-dev libgtk2.0-dev libatk1.0-dev libbonoboui2-dev libcairo2-dev libx11-dev libxpm-dev libxt-dev python-dev python3-dev ruby-dev lua5.1 liblua5.1-dev libperl-dev git
 
       - name: 运行 init.sh 并检查是否安装得当
         env:
@@ -54,9 +54,14 @@ jobs:
       - name: setup-repo
         uses: actions/checkout@main
       - name: deps
+        # echo 'export PATH="/opt/homebrew/opt/gnu-sed/libexec/gnubin:$PATH"' >> ~/.zprofile
+        # echo 'export PATH="/opt/homebrew/opt/grep/libexec/gnubin:$PATH"' >> ~/.zprofile
         run: |
           bash -c "$(curl -fsSL https://raw.githubusercontent.com/Homebrew/install/HEAD/install.sh)"
-          brew install wget grep gnu-sed
+          brew install wget grep gnu-sed cmake
+          echo 'export PATH="/opt/homebrew/opt/gnu-sed/libexec/gnubin:$PATH"' >> ~/.zshrc
+          echo 'export PATH="/opt/homebrew/opt/grep/libexec/gnubin:$PATH"' >> ~/.zshrc
+
       - name: task
         env:
           payload: ${{ matrix.payload }}
