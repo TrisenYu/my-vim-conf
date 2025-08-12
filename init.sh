@@ -3,7 +3,7 @@
 # SPDX-LICENSE-IDENTIFIER: GPL2.0
 # (C) All rights reserved. Author: <kisfg@hotmail.com> in 2025
 # Created at 2025年07月06日 星期日 18时04分20秒
-# Last modified at 2025年08月12日 星期二 22时30分08秒
+# Last modified at 2025年08月12日 星期二 22时40分00秒
 #
 # 我的评价是不如直接编程
 # TODO: 这么复杂的脚本居然没有getopts?
@@ -321,6 +321,7 @@ function _cp_vimrc() {
 		echo 'need clone and compile...'
 		return
 	fi
+	mkdir -p "$vimdir"
 	cp "$curr_dir/vimrc" "$vim_target"
 	cp "$curr_dir/clean_vimview.py" "$vimdir/clean_vimview.py"
 	vim -u "$vim_target" +PlugInstall! +wa!

@@ -1,4 +1,4 @@
-# Last modified at 2025年08月12日 星期二 22时33分07秒
+# Last modified at 2025年08月12日 星期二 22时37分34秒
 # TODO: READ hyperlink below.
 # https://stibel.icu/devops/ci/local-repository.html
 name: CI/CD validator designed for init.sh and clean_vimview.py
@@ -56,7 +56,8 @@ jobs:
       - name: deps
         run: |
           bash -c "$(curl -fsSL https://raw.githubusercontent.com/Homebrew/install/HEAD/install.sh)"
-          brew install wget grep gnu-sed cmake perl
+          brew install wget grep gnu-sed cmake perl vim
+          gsed -i 's/set -u/set -ux/g' init.sh
 
       - name: task
         env:
