@@ -3,7 +3,7 @@
 # SPDX-LICENSE-IDENTIFIER: GPL2.0
 # (C) All rights reserved. Author: <kisfg@hotmail.com> in 2025
 # Created at 2025年07月06日 星期日 18时04分20秒
-# Last modified at 2025年08月12日 星期二 22时55分43秒
+# Last modified at 2025年08月12日 星期二 23时08分51秒
 #
 # 我的评价是不如直接编程
 # TODO: 这么复杂的脚本居然没有getopts?
@@ -126,10 +126,11 @@ function _probe() {
 		curr_mirr=(`echo "$item" | tr ',' ' '`)
 		# ? 下面几个怎么不是从零开始的？
 		conn_score=${curr_mirr[4]}
+		# 当然是ping越低越好
 		ping_val=${curr_mirr[3]}
 		wget_val=${curr_mirr[2]}
 		[[ "$conn_score" -ge 90 ]] && continue
-		mid_val=`echo "scale=2; $wget_val/$tot_wget*0.7+0.3*$ping_val/$tot_ping" | bc`
+		mid_val=`echo "scale=2; (1.0-$wget_val/$tot_wget)*0.7+0.3*(1.0-$ping_val/$tot_ping)" | bc`
 		if [[ "$choice_val" -lt "$mid_val" ]]; then
 			choice_val="$mid_val"
 			res_mirror="${curr_mirr[1]}"
