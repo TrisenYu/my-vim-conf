@@ -3,7 +3,7 @@
 # SPDX-LICENSE-IDENTIFIER: GPL2.0
 # (C) All rights reserved. Author: <kisfg@hotmail.com> in 2025
 # Created at 2025年07月06日 星期日 18时04分20秒
-# Last modified at 2025年08月12日 星期二 22时09分38秒
+# Last modified at 2025年08月12日 星期二 22时19分31秒
 #
 # 我的评价是不如直接编程
 # TODO: 这么复杂的脚本居然没有getopts?
@@ -24,6 +24,7 @@ plugman="$init_dir/plug.vim"
 
 ping_dev='mdev'
 font_key=false
+gsed='sed'
 # file-hash
 vimrc_hash=`sha256sum "$curr_dir/vimrc" | awk -F' ' '{ print $1 }'`
 # github
@@ -241,7 +242,7 @@ function get_plug_manager() {
 		# 需要备份plugman，防止意外. 后面自己删
 		# 注意下面的引号
 		# \ '^https://git::@github\.com', 'https://wget.la/https://github.com', '')
-		sed -i "s#'$main_github#'$url_prefix#g" "$plugman"
+		$gsed -i "s#'$main_github#'$url_prefix#g" "$plugman"
 	}&
 }
 
@@ -268,7 +269,7 @@ function set_font_conf() {
 		# 不重复定义
 		[[ "$check_dup" != '' ]] && return
 		# 否则插入到</fontconfig>所在的上一行
-		sed -i "/<\\/fontconfig>/i\\$payload" "$fontconf"
+		$gsed -i "/<\\/fontconfig>/i\\$payload" "$fontconf"
 		return
 	fi
 	mkdir -p "$tonfpath" && touch "$fontconf"
@@ -325,8 +326,10 @@ function _cp_vimrc() {
 
 
 function check_sys() {
-	if [[ "`uname -o`" != "GNU/Linux" ]]; then
+	# linux: GNU/Linux
+	if [[ "`uname -o`" == "Darwin" ]]; then
 		ping_dev='stddev'
+		gsed='gsed'
 	fi
 }
 ####################################################################### shellscript入口
@@ -341,7 +344,7 @@ if [[ "$font_key" = true ]]; then
 	"get_fonts"
 	"set_font_conf"
 else
-	sed -i 's/set guifont=/" set guifont=/g' "$curr_dir/vimrc"
+	$gsed -i 's/set guifont=/" set guifont=/g' "$curr_dir/vimrc"
 	# 重算
 	vimrc_hash=`sha256sum "$curr_dir/vimrc" | awk -F' ' '{ print $1 }'`
 fi
