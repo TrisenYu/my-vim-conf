@@ -3,7 +3,7 @@
 # SPDX-LICENSE-IDENTIFIER: GPL2.0
 # (C) All rights reserved. Author: <kisfg@hotmail.com> in 2025
 # Created at 2025年07月06日 星期日 18时04分20秒
-# Last modified at 2025年08月12日 星期二 21时55分16秒
+# Last modified at 2025年08月12日 星期二 22时09分38秒
 #
 # 我的评价是不如直接编程
 # TODO: 这么复杂的脚本居然没有getopts?
@@ -18,7 +18,7 @@ vimdir="$HOME/.vim"
 fonts_dir="$HOME/.fonts/"
 color_path="$vimdir/colors"
 init_dir="$vimdir/autoload"
-ycm_dir="$vimdir/plugged/YouCOmpleteMe/"
+ycm_dir="$vimdir/plugged/YouCompleteMe/"
 vim_target="$vimdir/vimrc"
 plugman="$init_dir/plug.vim"
 
@@ -48,6 +48,7 @@ sha256_list=(
 	'b20a708bfe76897bd4ad1e07521c657aca8f6ad0b07c5c13a9436969fb96a6ca'
 	'f80cbcaa8e827d2d0f693cc2188be746caa7d641ac7db6dece1cd49c1eec343a'
 	'f8c8e678ff3856de7bad2f37e896e0811fbc9b282bd74bae7b777226bf090170'
+	'62bf9761500e1a09753c06cbfd1cd9057904b61ea4a2a590d09b7fc7cb108d31'
 )
 
 # git-commit-hash
@@ -305,7 +306,7 @@ function setup_ycm() {
 	# 需要 cmake
 	cd "$ycm_dir"
 	git submodule update --init --recursive
-	python3 install.py
+	python3 ./install.py
 }
 
 function _cp_vimrc() {
