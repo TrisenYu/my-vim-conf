@@ -3,11 +3,13 @@
 # SPDX-LICENSE-IDENTIFIER: GPL2.0
 # (C) All rights reserved. Author: <kisfg@hotmail.com> in 2025
 # Created at 2025年07月06日 星期日 18时04分20秒
-# Last modified at 2025年08月12日 星期二 23时08分51秒
+# Last modified at 2025年08月15日 星期五 21时14分57秒
 #
 # 我的评价是不如直接编程
 # TODO: 这么复杂的脚本居然没有getopts?
 #		感觉过于繁琐，还要在shellscript内验参
+# TODO: 出现异常后处理异常并终止执行
+has_been_called=""
 set -u
 
 ######################### 常/变量定义
@@ -17,10 +19,14 @@ curr_dir=`pwd`
 vimdir="$HOME/.vim"
 fonts_dir="$HOME/.fonts/"
 color_path="$vimdir/colors"
+plug_dir="$vimdir/plugged"
 init_dir="$vimdir/autoload"
-ycm_dir="$vimdir/plugged/YouCompleteMe/"
+
 vim_target="$vimdir/vimrc"
 plugman="$init_dir/plug.vim"
+
+ycm_dir="$plug_dir/YouCompleteMe/"
+vimspector_dir="$plug_dir/vimspector"
 
 ping_dev='mdev'
 font_key=false
@@ -60,7 +66,7 @@ color_schash='040138616bec342d5ea94d4db296f8ddca17007a'
 plugman_hash='baa66bcf349a6f6c125b0b2b63c112662b0669e1'
 past_inihash='5521a1922785c852707e40303d6394d4044caf83'
 
-# TODO: 如何获取镜像主机名单？
+# TODO: 如何自动获取镜像主机名单？
 famous_mirrors=(
 	'gh-proxy.com'
 	'gh-proxy.net'
@@ -84,13 +90,15 @@ ping_times=3
 inf_val=31415926535897932384626433
 get_self="$raw_github/TrisenYu/my-vim-conf/$past_inihash/init.sh"
 
-# ping 所有给定的镜像站，取时长最小、丢包数最小的一个
+# 通过 ping 和实际wget来测试所有给定的镜像站，
+# 取时长最小、丢包数最小的一个
 function _probe() {
 	mirr_str=""
 	tot_ping=0
 	tot_wget=0
 	for cur_mirr in ${famous_mirrors[@]}; do
-		# TODO: ping和wget也并发
+		# TODO: ping和wget也做并发
+		# 但要上数量控制、互斥保护还有异常kill
 		mid_rtt_val=`ping -c $ping_times $cur_mirr`
 		[[ "$?" != 0 ]] && continue
 		loss_rate=`echo "$mid_rtt_val" | $ggrep -oP '([0-9\.]+)(?=% packet loss)'`
@@ -118,19 +126,20 @@ function _probe() {
 		tot_wget=`echo "$tot_wget+$interval" | bc`
 		tot_ping=`echo "$tot_ping+$rtt_val" | bc`
 	done
-	[[ "mirr_str" == "" ]] && return
-	mirror_tbl=(`echo -e "${mirr_str:0:-2}" | sort -n -t ' ' -k2 -k3 -k4 | tr "\n" ' '`)
+	[[ "$mirr_str" == "" ]] && return
+	mirror_tbl=(`echo -e "${mirr_str:0:-2}" | sort -nt ' ' -k2 -k3 -k4 | tr "\n" ' '`)
 	mirr_check=`echo -e "$mirror_tbl" | awk -F' ' '{ print $3 }' | head -n 1`
 	choice_val=0
 	for item in ${mirror_tbl[@]}; do
 		curr_mirr=(`echo "$item" | tr ',' ' '`)
 		# ? 下面几个怎么不是从零开始的？
 		conn_score=${curr_mirr[4]}
-		# 当然是ping越低越好
 		ping_val=${curr_mirr[3]}
 		wget_val=${curr_mirr[2]}
 		[[ "$conn_score" -ge 90 ]] && continue
-		mid_val=`echo "scale=2; (1.0-$wget_val/$tot_wget)*0.7+0.3*(1.0-$ping_val/$tot_ping)" | bc`
+		# 当然是越低越好
+		calc_expr="(1.0-$wget_val/$tot_wget)*0.7+0.3*(1.0-$ping_val/$tot_ping)"
+		mid_val=`echo "scale=2; $calc_expr" | bc`
 		if [[ "$choice_val" -lt "$mid_val" ]]; then
 			choice_val="$mid_val"
 			res_mirror="${curr_mirr[1]}"
@@ -228,7 +237,8 @@ function get_color_scheme() {
 	{
 		echo "fetch color_scheme..."
 		# TODO: cdn.jsdelivr.net/gh 下
-		# raw-github的形式：https://cdn.jsdelivr.net/gh/morhetz/gruvbox@master/colors/gruvbox.vim
+		# raw-github的形式：
+		# https://cdn.jsdelivr.net/gh/morhetz/gruvbox@master/colors/gruvbox.vim
 		wget -P "$color_path" \
 			"$raw_github/morhetz/gruvbox/$color_schash/colors/gruvbox.vim" &> /dev/null
 	}&
@@ -309,10 +319,29 @@ function _clone_vim_src() {
 }
 
 function setup_ycm() {
+	# TODO: 如果没下载好就进来就会爆炸
 	# 需要 cmake
 	cd "$ycm_dir"
 	git submodule update --init --recursive
 	python3 ./install.py
+	cd "$curr_dir"
+}
+
+function setup_vimspector() {
+	# TODO: 如果没下载好就进来就会爆炸
+	cd "$vimspector_dir"
+	# github.com/go-delve/delve/cmd/dlv 是作为 go mod 来的
+	# 理论上不会受到这里替换的影响
+	# 因为模式串是 https 开头的
+	$gsed -i "s#'$main_github#'$url_prefix#g" ./python3/vimspector/gadgets.py
+	python3 ./install_gadget.py \
+		--enable-c --enable-cpp --enable-go \
+		--enable-python --enable-bash \
+		--force-enable-node \
+		--enable-rust
+	vim -u "$vim_target" +VimSpectorInstall! +wa!
+	cd "$curr_dir"
+
 }
 
 function _cp_vimrc() {
@@ -327,7 +356,12 @@ function _cp_vimrc() {
 	cp "$curr_dir/vimrc" "$vim_target"
 	cp "$curr_dir/clean_vimview.py" "$vimdir/clean_vimview.py"
 	vim -u "$vim_target" +PlugInstall! +wa!
-	"setup_ycm"
+	# 避免重复处理，虽然git状态会不是很好看而已了
+	if [[ "$has_been_called" != "" ]]; then
+		sed -i '12s/has_been_called=""/has_been_called="yes"/' "$curr_dir/init.sh"
+		"setup_ycm"
+		"setup_vimspector"
+	fi
 }
 
 
@@ -340,8 +374,6 @@ function check_sys() {
 	fi
 }
 ####################################################################### shellscript入口
-# 准备创建管道文件
-# TODO: auto sync for mirror list
 "check_sys"
 "alter_src_via_mirror"
 "get_plug_manager"
@@ -361,7 +393,8 @@ fi
 # arch
 #	sudo pacman -Rsn vi vim-tiny vim vim-runtime gvim vim-common vim-gui-common vim-nox
 # debian
-#	sudo apt-get remove --purge vi vim-tiny vim vim-runtime gvim vim-common vim-gui-common vim-nox
+#	sudo apt-get remove --purge vi vim-tiny vim vim-runtime
+#								gvim vim-common vim-gui-common vim-nox
 
 if [[ -s "$vim_target" ]]; then
 	# 经过color后已经创建~/.vim/目录

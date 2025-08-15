@@ -1,6 +1,5 @@
 " 第一次看到配置当script来写
 " 属实是大无语
-
 " 不会可以看这个 https://yongfu.name/Learn-Vim/
 " 预计占用30MB
 set runtimepath+=$HOME/.vim/autoload/
@@ -16,12 +15,29 @@ call plug#begin()
 	Plug 'boydos/emmet-vim'						" xml, html 尖括号补全
 	Plug 'dense-analysis/ale'					" 语法错误检查
 	Plug 'vim-airline/vim-airline'				" status/tab line
+	" 其实可以直接在这里用, {'do': './install_gadget.py --enable-c ...'}
+	" 但是奈何这个配置没有那么智能，并不能折行，
+	" 另外就是国内访问github速度感人，还得依靠镜像站加速
+	" 所以还得移动到init.sh去做这件事
 	Plug 'puremourning/vimspector'				" realtime-debug
+	" Plug 'lkebin/vim-terwin'					" terminal设置
 call plug#end()
 
+":help PEP
+" 这样就直接用这个vimrc内对缩进的设置了
+let g:python_recommended_style = 0
+
+
+let g:_plug_dir="$HOME/.vim/plugged"
+" if filereadable(expand(_plug_dir."/vim-terwin/plugin/terwin.vim"))
+" 	let g:TerWinSize = 8
+" 	let g:TerWinLocation = 'botright'
+" 	nnoremap <leader>term :TerWinToggle<CR>
+" endif
+
+
 " 语法关键字自动补全
-let _plug_dir="$HOME/.vim/plugged"
-if filereadable(expand(_plug_dir."/ale/autoload/ale.vim"))
+if filereadable(expand(g:_plug_dir."/ale/autoload/ale.vim"))
 	let g:ale_lint_on_text_changed = 'never'
 	let g:ale_completion_delay = 100 " ms
 	let g:ale_lint_on_enter = 0
@@ -39,7 +55,7 @@ if filereadable(expand(_plug_dir."/ale/autoload/ale.vim"))
 	let g:ale_fix_on_save = 1
 endif
 
-if filereadable(expand(_plug_dir."/YouCompleteMe/autoload/youcompleteme.vim"))
+if filereadable(expand(g:_plug_dir."/YouCompleteMe/autoload/youcompleteme.vim"))
 	let g:ycm_semantic_triggers = {
 		\ 'c': ['re!\w{2}'],
 		\ "cpp": ['re!\w{2}'],
@@ -83,10 +99,14 @@ if filereadable(expand(_plug_dir."/YouCompleteMe/autoload/youcompleteme.vim"))
 	" let g:ycm_key_list_select_completion = ['<TAB>']
 	" let g:ycm_key_list_previous_completion = ['<S-TAB>']
 	" let g:ycm_key_list_stop_completion = ['<CR>', '<C-y>']
+	if expand("$HOME/.vim") == getcwd()
+        let g:ycm_auto_trigger = 0
+        let g:ycm_show_diagnostics_ui = 0
+	endif
 endif
 
 " 启动nerdTree并把光标留在第二个窗口
-if filereadable(expand(_plug_dir."/nerdtree/autoload/nerdtree.vim")) 
+if filereadable(expand(g:_plug_dir."/nerdtree/autoload/nerdtree.vim")) 
 	let g:NERDSpaceDelims			 = 1		" 在注释符号后加一个空格
 	let g:NERDCompactSexyComs		 = 1		" 紧凑排布多行注释
 	let g:NERDToggleCheckAllLines	 = 1		" 检查选中项是否有没被注释的项，有则全部注释
@@ -96,33 +116,34 @@ if filereadable(expand(_plug_dir."/nerdtree/autoload/nerdtree.vim"))
 	let g:NERDToggleCheckAllLines	 = 1		" 检查选中的行操作是否成功
 	let g:NERDTreeWinSize			 = 16		" 侧边栏大小
 	let g:NERDTreeHidden			 = 0		" 不隐藏.文件
+	let g:NERDTreeShowHidden		 = 1
 	autocmd VimEnter * :NERDTree | wincmd p
 	autocmd BufEnter * exec "call Config_NerdTree()"
 	map <silent> <C-&> :NERDTreeToggle<CR>
 endif
 
-if filereadable(expand(_plug_dir."/tarbar/autoload/tarbar.vim"))
+if filereadable(expand(g:_plug_dir."/tarbar/autoload/tarbar.vim"))
 	" 换为 F1
 	nmap <F1> :TagbarToggle<CR>
 endif
-if filereadable(expand(_plug_dir."/emmet-vim/autoload/emmet.vim"))
+if filereadable(expand(g:_plug_dir."/emmet-vim/autoload/emmet.vim"))
 	let g:user_emmet_install_global = 0
 	let g:user_emmet_expandabbr_key = '<C-e>'
 	autocmd FileType html,css,xml EmmetInstall
 endif
 " 自动闭合
-if filereadable(expand(_plug_dir."/lexima.vim/autoload/lexima.vim"))
+if filereadable(expand(g:_plug_dir."/lexima.vim/autoload/lexima.vim"))
 	let g:lexima_enable_basic_rules = 1
 endif
 " RGB彩色括号
-if filereadable(expand(_plug_dir."/rainbow/autoload/rainbow.vim"))
+if filereadable(expand(g:_plug_dir."/rainbow/autoload/rainbow.vim"))
 	let g:rainbow_active = 1
 endif
-if filereadable(expand(_plug_dir."/vim-indent-guides/autoload/indent_guides.vim"))
+if filereadable(expand(g:_plug_dir."/vim-indent-guides/autoload/indent_guides.vim"))
 	let g:indent_guides_enable_on_vim_startup = 1
 endif
 
-if filereadable(expand(_plug_dir."/vim-airline/autoload/airline.vim"))
+if filereadable(expand(g:_plug_dir."/vim-airline/autoload/airline.vim"))
 	let g:airline_powerline_fonts = 0
 
 	let g:airline#extensions#tabline#enabled = 1
@@ -151,9 +172,17 @@ endif
 " 这个调试插件需要配置「调试适配器, Debug Adapter, DA」以联通vimspector和实际的调试器
 " 配置只需要遵循微软的 DA Protocol, DAP 就行。 
 " https://microsoft.github.io/debug-adapter-protocol/overview
-" 
-if filereadable(expand(_plug_dir.'/vimspector/autoload/vimspector.vim'))
-	nnoremap <leader>db :call vimspector#Launch()<CR>
+" '你需要创建一个 .vimspector.json 文件，放在项目的根目录中，定义你的调试配置'
+"	TODO: 每次都需要手写未免过于蛋疼, 搞个自动生成吧
+"  - vscode-cpptools
+" - debugpy
+" - vscode-java-debug
+" - vscode-bash-debug
+" - vscode-go
+" - vscode-js-debug
+" - CodeLLDB
+if filereadable(expand(g:_plug_dir.'/vimspector/autoload/vimspector.vim'))
+	nnoremap <leader>debug :call vimspector#Launch()<CR>
 	nnoremap <leader>dR :call vimspector#Reset()<CR>
 	nnoremap <leader>dc :call vimspector#Continue()<CR>
 	nnoremap <Leader>dk :call vimspector#ToggleBreakpoint()<CR>
@@ -166,6 +195,11 @@ if filereadable(expand(_plug_dir.'/vimspector/autoload/vimspector.vim'))
 	nmap <Leader>di <Plug>VimspectorStepInto
 	" over
 	nmap <Leader>do <Plug>VimspectorStepOver
+	" diassembling
+	nmap <Leader>disassem	<Plug>VimspectorDisassemble 
+	nmap <Leader><F11>		<Plug>VimspectorUpFrame
+	nmap <Leader><F12> 		<Plug>VimspectorDownFrame
+	nmap <Leader>breakp     <Plug>VimspectorBreakpoints
 endif
 
 " TOFIX: 如果在非常大的项目里面(比如下载过插件后的这个仓库的目录下)用 youcompleteme 会巨卡，
@@ -189,7 +223,6 @@ func Toggle_ycm()
     endif
 endfunc
 
-
 " vimscript 要求函数名首字母大写
 func Config_NerdTree()
 	if (winnr('$') == 1 && exists('b:NERDTree') && b:NERDTree.isTabTree())
@@ -201,7 +234,7 @@ func Ret_to_last_pos()
 	if line("'\"") <= 0
 		return
 	endif
-	let ch="'\""
+	let ch = "'\""
 	if line("'\"") > line("$")
 		let ch = "$"
 	endif
@@ -243,8 +276,14 @@ func Pad_header()
 
 	" 难以吐槽这个python
 	if (&filetype == 'sh' || &filetype == 'zsh' || &filetype == 'python')
+		if &filetype == 'python'
+			let &filetype = 'python3'
+		endif
 		let header_comment .= "#!/usr/bin/env ".&filetype."\n"
 		let header_comment .= "# -*- coding: utf-8 -*-"."\n"
+		if &filetype == 'python3'
+			let &filetype = 'python'
+		endif
 	elseif (&filetype == 'xml' || &filetype == 'html')
 		" xml 似乎存在尖括号冲突
 		let [cloz, br, ebr] = [' -->', '{', '}']
@@ -289,18 +328,13 @@ func Update_info()
 	" TODO: 似乎有光标错位的情况
 	silent! %s/\s\+$//ge
 	silent! %s/^$\n\+\%$//ge
-
-	if (&filetype == 'python')
-		" 空格全部替换为tab
-		silent! %s/    /	/ge
-	endif
 endfunc
 
 autocmd BufNewFile 
-	\ *.{c[cu],java,lua,[ch]pp,[ch],[hs]h,py,go,[jrt]s,html\=,xml,ya\=ml,bat},makefile,CMakeLists.txt 
+	\ *.{c[cu]\=,java,lua,[ch]pp,[ch],[hs]h,py,go,[jrt]s,html\=,xml,ya\=ml,bat,zig},makefile,CMakeLists.txt 
 	\ exec "call Pad_header()"
 autocmd BufWritePre,filewritepre 
-	\ *.{c[cu],java,lua,[ch]pp,[ch],[hs]h,py,go,[jrt]s,html\=,xml,ya\=ml,bat},makefile,CMakeLists.txt 
+	\ *.{c[cu]\=,java,lua,[ch]pp,[ch],[hs]h,py,go,[jrt]s,html\=,xml,ya\=ml,bat,zig},makefile,CMakeLists.txt 
 	\ exec "call Update_info()"
 
 " https://vim.fandom.com/wiki/Make_views_automatic
@@ -317,17 +351,25 @@ autocmd BufWinEnter,BufRead *
 if filereadable(expand("$HOME/.vim/clean_vimview.py"))
 	autocmd BufWritePre vimrc silent exec "!python ~/.vim/clean_vimview.py -ra true"
 endif
-" 修改后自动修改
-" TOFIX: 感觉打开vim卡卡的
-" autocmd! BufWritePost vimrc source %
-""" 自动命令配置
-
 
 " 返回上一次对该文件的编辑位置
 autocmd BufReadPost * exec "call Ret_to_last_pos()"
-" 不会自动增加注释
-" TODO: 不过有时候也挺麻烦的，还是用一个键位来控制这个的使能吧
-autocmd Filetype * setlocal formatoptions-=c formatoptions-=r formatoptions-=o
+
+" 控制何时自动加注释
+let g:comment_status = 0
+autocmd FileType * setlocal formatoptions-=c formatoptions-=r formatoptions-=o
+
+func AutoComment()
+	if g:comment_status == 0
+		let g:comment_status = 1
+		set formatoptions+=c formatoptions+=r formatoptions+=o
+		return
+	endif
+	let g:comment_status = 0
+	set formatoptions-=c formatoptions-=r formatoptions-=o
+endfunc
+map <leader>comments :call AutoComment() <CR>
+
 "" 其它内置的配置选项
 filetype on
 filetype plugin on
@@ -396,15 +438,15 @@ set incsearch
 " set hlsearch
 " set nowrap " 不自动折行
 set linebreak " 遇到特殊符号才折行
-syntax enable
-syntax on
+:syntax enable
+:syntax on
 
 set tabstop=4
 set softtabstop=4
 set shiftwidth=4
 set cindent
-set smarttab
-" 不管如何默认缩进
+set smartindent
+" 不管如何默认用tab缩进
 set noexpandtab
 set autoindent
 
@@ -413,8 +455,6 @@ set laststatus=2
 set completeopt-=preview
 set textwidth=256
 
-" 终端大小放1行
-set termwinsize="2*0"
 set showtabline=2
 " 显示不可见字符，并定制行尾空格、tab键显示符号
 " set list
@@ -429,6 +469,7 @@ set showtabline=2
 
 set selectmode=mouse,key
 set t_Co=256 " 二百五十六色支持
+set backspace=indent,eol,start
 
 if has("unix")
 	set guifont=Fira\ Code\ Medium\ 12,JetBrains\ Mono\ Medium\ 12
@@ -441,3 +482,4 @@ set cursorline
 highlight CursorLine guibg=lightgrey 
 " 透明背景
 highlight Normal ctermbg=none
+

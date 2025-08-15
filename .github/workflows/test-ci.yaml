@@ -1,4 +1,4 @@
-# Last modified at 2025年08月12日 星期二 22时37分34秒
+# Last modified at 2025年08月14日 星期四 23时35分58秒
 # TODO: READ hyperlink below.
 # https://stibel.icu/devops/ci/local-repository.html
 name: CI/CD validator designed for init.sh and clean_vimview.py
@@ -16,7 +16,7 @@ jobs:
       - name: 切分支
         uses: actions/checkout@main
       - name: 安依赖
-        run: sudo apt install bc coreutils cmake # libncurses5-dev libgnome2-dev libgnomeui-dev libgtk2.0-dev libatk1.0-dev libbonoboui2-dev libcairo2-dev libx11-dev libxpm-dev libxt-dev python-dev python3-dev ruby-dev lua5.1 liblua5.1-dev libperl-dev git
+        run: sudo apt install bc coreutils cmake
 
       - name: 运行 init.sh 并检查是否安装得当
         env:
@@ -56,7 +56,7 @@ jobs:
       - name: deps
         run: |
           bash -c "$(curl -fsSL https://raw.githubusercontent.com/Homebrew/install/HEAD/install.sh)"
-          brew install wget grep gnu-sed cmake perl vim
+          brew install wget grep gnu-sed cmake perl vim python3
           gsed -i 's/set -u/set -ux/g' init.sh
 
       - name: task
