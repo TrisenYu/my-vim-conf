@@ -3,7 +3,7 @@
 # SPDX-LICENSE-IDENTIFIER: GPL2.0
 # (C) All rights reserved. Author: <kisfg@hotmail.com> in 2025
 # Created at 2025年07月22日 星期二 15时40分07秒
-# Last modified at 2025年08月10日 星期日 01时05分53秒
+# Last modified at 星期二 2025/09/02 23:46:40
 
 pkg_man=''
 _update=''
@@ -83,6 +83,11 @@ function setup_golang {
 function setup_nodejs() {
 	# TODO
 	curl https://nodejs.org/en/download/current
+}
+
+function setup_mac() {
+	# TODO
+	defaults write com.apple.desktopservices DSDontWriteNetworkStores true
 }
 
 # shellscript 的入口

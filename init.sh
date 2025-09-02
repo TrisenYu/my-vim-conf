@@ -3,7 +3,7 @@
 # SPDX-LICENSE-IDENTIFIER: GPL2.0
 # (C) All rights reserved. Author: <kisfg@hotmail.com> in 2025
 # Created at 2025年07月06日 星期日 18时04分20秒
-# Last modified at 2025年08月15日 星期五 21时14分57秒
+# Last modified at 2025/09/02 星期二 23:50:15
 #
 # 我的评价是不如直接编程
 # TODO: 这么复杂的脚本居然没有getopts?
@@ -108,13 +108,16 @@ function _probe() {
 		`
 		if [[ "$rtt_val" == "" ]]; then
 			rtt_val=`\
-				echo "$mid_rtt_val" | $ggrep -o ' [0-9\.]\+ms$' | \
+				echo "$mid_rtt_val" | grep -oP ' ([0-9\.]+)ms$' | \
 				awk -F'ms' '{ print $1 }'\
 			`
-			[[ "$rtt_val" != "" ]] && rtt_val=`echo "scale=6;$rtt_val/$ping_times" | bc`
+			if [[ "$rtt_val" != '' ]]; then
+				rtt_val=`echo "scale=6;$rtt_val/$ping_times" | bc`
+			else
+				# 否则认为站点不可达
+				rtt_val=$inf_val
+			fi
 		fi
-		# 否则认为站点不可达
-		[[ "$rtt_val" == "" ]] && rtt_val=$inf_val
 
 		st_time=`date +%s.%N`
 		wget "https://$cur_mirr/$get_self" -O - &> /dev/null
@@ -122,7 +125,7 @@ function _probe() {
 		ed_time=`date +%s.%N`
 		interval=`echo "scale=9; $ed_time-$st_time" | bc`
 		[[ "$ret_num" != 0 ]] && loss_rate=100
-		mirr_str+="$cur_mirr,$interval,$rtt_val,$loss_rate\n"
+		mirr_str+="$cur_mirr,$interval,$rtt_val,$loss_rate\\n"
 		tot_wget=`echo "$tot_wget+$interval" | bc`
 		tot_ping=`echo "$tot_ping+$rtt_val" | bc`
 	done
@@ -179,6 +182,7 @@ function alter_src_via_mirror() {
 function _detect_font() {
 	mkdir -p "$fonts_dir" && cd "$fonts_dir"
 	font_urls=($@)
+	set fontname_list
 	fontname_list=("$mononame" "$firaname" "$lxgwname" "$maplname")
 	tar_list=("$mono_zip" "$fira_zip" "$lxgw_zip" "$mapl_zip")
 	for ((i=0; i<${#font_urls[@]}; i++)); do
@@ -199,7 +203,7 @@ function _detect_font() {
 			# 文件有而且齐全
 			[[ "$ret" == "${sha256_list[i]}" ]] && continue
 		elif [[ -f "$fonts_dir${tar_list[i]}" ]]; then
-			# 不存在但有tar/zip
+			# 不存在但有zip
 			{"unzipper"}&
 			continue
 		fi

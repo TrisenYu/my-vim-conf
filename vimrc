@@ -290,20 +290,21 @@ func Pad_header()
 	else
 		let addt = sign."\n"
 	endif
-
+	
+	let time_format = "%Y/%m/%d %A %H:%M:%S"
 	let header_comment .= sign.license.cloz."\n".addt
 	let header_comment .= sign."(C) All rights reserved. "
 	" TODO: 别人如果要用，邮箱难道还要到这个函数里面来改吗？
 	let header_comment .= "Author: ".br."kisfg@hotmail.com"
 	let header_comment .= ebr." in ".strftime("%Y").cloz."\n"
-	let header_comment .= sign."Created at ".strftime("%c").cloz."\n"
-	let header_comment .= sign."Last modified at ".strftime("%c").cloz."\n"
+	let header_comment .= sign."Created at ".strftime(time_format).cloz."\n"
+	let header_comment .= sign."Last modified at ".strftime(time_format).cloz."\n"
 	" TODO: 加 prompt 用于辅助构建，比如 cmake --help-command-list
 	exec "normal i".header_comment | exec "normal G"
 endfunc
 
 func Update_info() 
-	let [sign, payload, prefix] = [Get_sign(), strftime("%c"), 'Last modified at ']
+	let [sign, payload, prefix] = [Get_sign(), strftime("%Y/%m/%d %A %H:%M:%S"), 'Last modified at ']
 	let exam = sign.prefix.'.*'
 	let repl = sign.prefix.payload
 	let [st, ed, flag] = [0, 8, 0]
