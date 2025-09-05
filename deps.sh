@@ -3,7 +3,7 @@
 # SPDX-LICENSE-IDENTIFIER: GPL2.0
 # (C) All rights reserved. Author: <kisfg@hotmail.com> in 2025
 # Created at 2025年07月22日 星期二 15时40分07秒
-# Last modified at 星期二 2025/09/02 23:46:40
+# Last modified at 2025/09/05 星期五 16:30:52
 
 pkg_man=''
 _update=''
@@ -86,8 +86,13 @@ function setup_nodejs() {
 }
 
 function setup_mac() {
+	[[ "`uname -o`" != "Darwin" ]] && return
 	# TODO
 	defaults write com.apple.desktopservices DSDontWriteNetworkStores true
+	# TODO: 能直接写成一条命令吗?
+	sudo -s bash -c "nvram AutoBoot=%00"
+	sudo -s bash -c "nvram BootPreference=%00"
+	sudo -s bash -c "pmset -a lidwake 0"
 }
 
 # shellscript 的入口

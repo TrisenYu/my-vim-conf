@@ -12,7 +12,7 @@ call plug#begin()
 	Plug 'cohama/lexima.vim'					" 自动闭合括号
 	Plug 'rust-lang/rust.vim'
 	Plug 'preservim/tagbar'						" 层级目录显示
-	Plug 'boydos/emmet-vim'						" xml, html 尖括号补全
+	Plug 'tpope/vim-surround'					" 好了 xml/html 可以拿走了
 	Plug 'dense-analysis/ale'					" 语法错误检查
 	Plug 'vim-airline/vim-airline'				" status/tab line
 	" 其实可以直接在这里用, {'do': './install_gadget.py --enable-c ...'}
@@ -20,7 +20,7 @@ call plug#begin()
 	" 另外就是国内访问github速度感人，还得依靠镜像站加速
 	" 所以还得移动到init.sh去做这件事
 	Plug 'puremourning/vimspector'				" realtime-debug
-	" Plug 'lkebin/vim-terwin'					" terminal设置
+	Plug 'lkebin/vim-terwin'					" terminal设置
 call plug#end()
 
 ":help PEP
@@ -29,11 +29,11 @@ let g:python_recommended_style = 0
 
 
 let g:_plug_dir="$HOME/.vim/plugged"
-" if filereadable(expand(_plug_dir."/vim-terwin/plugin/terwin.vim"))
-" 	let g:TerWinSize = 8
-" 	let g:TerWinLocation = 'botright'
-" 	nnoremap <leader>term :TerWinToggle<CR>
-" endif
+if filereadable(expand(_plug_dir."/vim-terwin/plugin/terwin.vim"))
+	let g:TerWinSize = 8
+	let g:TerWinLocation = 'botright'
+	nnoremap <leader>term :TerWinToggle<CR>
+endif
 
 
 " 语法关键字自动补全
@@ -119,18 +119,23 @@ if filereadable(expand(g:_plug_dir."/nerdtree/autoload/nerdtree.vim"))
 	let g:NERDTreeShowHidden		 = 1
 	autocmd VimEnter * :NERDTree | wincmd p
 	autocmd BufEnter * exec "call Config_NerdTree()"
-	map <silent> <C-&> :NERDTreeToggle<CR>
+	" tmux 里面要用ctrl+b
+	" 这里的话需要调整一下
+	map <silent> <leader><C-^> :NERDTreeToggle<CR>
 endif
 
 if filereadable(expand(g:_plug_dir."/tarbar/autoload/tarbar.vim"))
 	" 换为 F1
 	nmap <F1> :TagbarToggle<CR>
 endif
-if filereadable(expand(g:_plug_dir."/emmet-vim/autoload/emmet.vim"))
-	let g:user_emmet_install_global = 0
-	let g:user_emmet_expandabbr_key = '<C-e>'
-	autocmd FileType html,css,xml EmmetInstall
+if filereadable(expand(g:_plug_dir."vim-surround/plugin/surround.vim"))
+	" TODO
 endif
+" if filereadable(expand(g:_plug_dir."/emmet-vim/autoload/emmet.vim"))
+" 	let g:user_emmet_install_global = 0
+" 	let g:user_emmet_expandabbr_key = '<C-e>'
+" 	autocmd FileType html,css,xml EmmetInstall
+" endif
 " 自动闭合
 if filereadable(expand(g:_plug_dir."/lexima.vim/autoload/lexima.vim"))
 	let g:lexima_enable_basic_rules = 1
@@ -166,6 +171,7 @@ if filereadable(expand(g:_plug_dir."/vim-airline/autoload/airline.vim"))
 	let g:airline_symbols.linenr = ' r:'
 	let g:airline_symbols.colnr = ' c:'
 	let g:airline_symbols.dirty = 'x'
+	let g:airline_symbols.branch = 'Y'
 	let g:airline_symbols.readonly = '[RO]'
 endif
 
@@ -483,4 +489,4 @@ set cursorline
 highlight CursorLine guibg=lightgrey 
 " 透明背景
 highlight Normal ctermbg=none
-
+set ambiwidth=double
