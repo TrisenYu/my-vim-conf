@@ -3,7 +3,7 @@
 # SPDX-LICENSE-IDENTIFIER: GPL2.0
 # (C) All rights reserved. Author: <kisfg@hotmail.com> in 2025
 # Created at 2025年07月06日 星期日 18时04分20秒
-# Last modified at 2025/09/02 星期二 23:50:15
+# Last modified at 2025/09/13 星期六 22:05:08
 #
 # 我的评价是不如直接编程
 # TODO: 这么复杂的脚本居然没有getopts?
@@ -134,18 +134,20 @@ function _probe() {
 	mirr_check=`echo -e "$mirror_tbl" | awk -F' ' '{ print $3 }' | head -n 1`
 	choice_val=0
 	for item in ${mirror_tbl[@]}; do
-		curr_mirr=(`echo "$item" | tr ',' ' '`)
-		# ? 下面几个怎么不是从零开始的？
-		conn_score=${curr_mirr[4]}
-		ping_val=${curr_mirr[3]}
-		wget_val=${curr_mirr[2]}
-		[[ "$conn_score" -ge 90 ]] && continue
+		declare curr_mirr=($(echo "$item" | tr ',' ' '))
+		conn_score=${curr_mirr[3]}
+		ping_val=${curr_mirr[2]}
+		wget_val=${curr_mirr[1]}
+		[[ $(echo "$conn_score > 90" | bc) -eq 1 ]] && continue
 		# 当然是越低越好
-		calc_expr="(1.0-$wget_val/$tot_wget)*0.7+0.3*(1.0-$ping_val/$tot_ping)"
-		mid_val=`echo "scale=2; $calc_expr" | bc`
-		if [[ "$choice_val" -lt "$mid_val" ]]; then
+		declare calc_expr="(1.0-$wget_val/$tot_wget)*0.7+0.3*(1.0-$ping_val/$tot_ping)"
+		declare mid_val=`echo "scale=2; $calc_expr" | bc`
+		if [[ `echo "$mid_val" | cut -c 1` == '.' ]]; then
+			mid_val="0$mid_val"
+		fi
+		if [[ $(echo "$choice_val < $mid_val" | bc) -eq 1 ]]; then
 			choice_val="$mid_val"
-			res_mirror="${curr_mirr[1]}"
+			res_mirror="${curr_mirr[0]}"
 		fi
 	done
 	unset rtt_dict mirr_str mirror_tbl mirr_check choice_rec
@@ -182,14 +184,13 @@ function alter_src_via_mirror() {
 function _detect_font() {
 	mkdir -p "$fonts_dir" && cd "$fonts_dir"
 	font_urls=($@)
-	set fontname_list
-	fontname_list=("$mononame" "$firaname" "$lxgwname" "$maplname")
+	declare fontname_list=("$mononame" "$firaname" "$lxgwname" "$maplname")
 	tar_list=("$mono_zip" "$fira_zip" "$lxgw_zip" "$mapl_zip")
 	for ((i=0; i<${#font_urls[@]}; i++)); do
-		payload="$fonts_dir${fontname_list[i]}/"
+		payload="$fonts_dir${fontname_list[$i]}/"
 		function unzipper() {
-			unzip "${tar_list[i]}" -d "$payload" &> /dev/null
-			rm ${tar_list[i]} && unset payload
+			unzip "${tar_list[$i]}" -d "$payload" &> /dev/null
+			rm ${tar_list[$i]} && unset payload
 			cd ..
 		}
 
@@ -201,14 +202,14 @@ function _detect_font() {
 				sha256sum | awk -F' ' '{ print $1 }' \
 			`
 			# 文件有而且齐全
-			[[ "$ret" == "${sha256_list[i]}" ]] && continue
-		elif [[ -f "$fonts_dir${tar_list[i]}" ]]; then
+			[[ "$ret" == "${sha256_list[$i]}" ]] && continue
+		elif [[ -f "$fonts_dir${tar_list[$i]}" ]]; then
 			# 不存在但有zip
 			{"unzipper"}&
 			continue
 		fi
 		{
-			wget "${font_urls[i]}" &> /dev/null
+			wget "${font_urls[$i]}" &> /dev/null
 			"unzipper"
 		}&
 	done
@@ -348,12 +349,22 @@ function setup_vimspector() {
 
 }
 
+function older_vim_cleaner() {
+	tobe_inject="vi vim-tiny vim vim-runtime gvim vim-common vim-gui-common vim-nox"
+	if command -v apt &> /dev/null; then
+		sudo apt-get remove --purge "$tobe_inject"
+	elif command -v pacman &> /dev/null; then
+		sudo pacman -Rsn "$tobe_inject"
+	elif command -v brew &> /dev/null; then
+		brew uninstall --force "$tobe_inject"
+	fi
+}
+
 function _cp_vimrc() {
 	vim_ver=`vim --version | $ggrep -oP '(?<=VIM - Vi IMproved )([0-9\.]+)'`
-	if [[ "$vim_ver" < 9 ]]; then
-		# TODO:
-		# "_clone_vim_src"
-		echo 'need clone and compile...'
+	if [[ $(echo "$vim_ver <= 9" | bc) -eq 1 ]]; then
+		"older_vim_cleaner"
+		"_clone_vim_src"
 		return
 	fi
 	mkdir -p "$vimdir"
@@ -392,14 +403,6 @@ else
 	vimrc_hash=`sha256sum "$curr_dir/vimrc" | awk -F' ' '{ print $1 }'`
 fi
 
-## TODO: 确定vim版本而决定是否需要从头开始编译，并编写可用的编译脚本
-# vim --version
-# arch
-#	sudo pacman -Rsn vi vim-tiny vim vim-runtime gvim vim-common vim-gui-common vim-nox
-# debian
-#	sudo apt-get remove --purge vi vim-tiny vim vim-runtime
-#								gvim vim-common vim-gui-common vim-nox
-
 if [[ -s "$vim_target" ]]; then
 	# 经过color后已经创建~/.vim/目录
 	calc_hash=`cat "$vim_target"|sha256sum|awk -F' ' '{print $1}'`
@@ -409,6 +412,3 @@ else
 fi
 
 echo 'done...'
-
-## 计算加载插件耗时
-# vim --startuptime vim.log
