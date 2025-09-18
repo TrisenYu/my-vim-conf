@@ -2,26 +2,28 @@
 " 属实是大无语
 " 不会可以看这个 https://yongfu.name/Learn-Vim/
 " 预计占用30MB
-set runtimepath+=$HOME/.vim/autoload/
-call plug#begin()
-	Plug 'preservim/nerdtree'					" 目录树
-	Plug 'preservim/nerdcommenter', {'on': []}	" 注释工具
-	Plug 'luochen1990/rainbow'					" 括号高亮
-	Plug 'ycm-core/YouCompleteMe'				" 自动补全
-	Plug 'nathanaelkane/vim-indent-guides'		" tab高亮
-	Plug 'cohama/lexima.vim'					" 自动闭合括号
-	Plug 'rust-lang/rust.vim'
-	Plug 'preservim/tagbar'						" 层级目录显示
-	Plug 'tpope/vim-surround'					" 好了 xml/html 可以拿走了
-	Plug 'dense-analysis/ale'					" 语法错误检查
-	Plug 'vim-airline/vim-airline'				" status/tab line
-	" 其实可以直接在这里用, {'do': './install_gadget.py --enable-c ...'}
-	" 但是奈何这个配置没有那么智能，并不能折行，
-	" 另外就是国内访问github速度感人，还得依靠镜像站加速
-	" 所以还得移动到init.sh去做这件事
-	Plug 'puremourning/vimspector'				" realtime-debug
-	Plug 'lkebin/vim-terwin'					" terminal设置
-call plug#end()
+set runtimepath+=$HOME/.vim/autoloa/
+if filereadable(expand("$HOME/.vim/autoload/plug.vim"))
+	call plug#begin()
+		Plug 'preservim/nerdtree'					" 目录树
+		Plug 'preservim/nerdcommenter', {'on': []}	" 注释工具
+		Plug 'luochen1990/rainbow'					" 括号高亮
+		Plug 'ycm-core/YouCompleteMe'				" 自动补全
+		Plug 'nathanaelkane/vim-indent-guides'		" tab高亮
+		Plug 'cohama/lexima.vim'					" 自动闭合括号
+		Plug 'rust-lang/rust.vim'
+		Plug 'preservim/tagbar'						" 层级目录显示
+		Plug 'tpope/vim-surround'					" 好了 xml/html 可以拿走了
+		Plug 'dense-analysis/ale'					" 语法错误检查
+		Plug 'vim-airline/vim-airline'				" status/tab line
+		" 其实可以直接在这里用, {'do': './install_gadget.py --enable-c ...'}
+		" 但是奈何这个配置没有那么智能，并不能折行，
+		" 另外就是国内访问github速度感人，还得依靠镜像站加速
+		" 所以还得移动到init.sh去做这件事
+		Plug 'puremourning/vimspector'				" realtime-debug
+		Plug 'lkebin/vim-terwin'					" terminal设置
+	call plug#end()
+endif
 
 ":help PEP
 " 这样就直接用这个vimrc内对缩进的设置了
@@ -401,8 +403,11 @@ nnoremap <C-tab> :bn<CR>
 " ctrl+x 关闭当前buffer
 nnoremap <C-X> :bd<CR>
 
-
-colorscheme gruvbox
+if filereadable(expand("$HOME/.vim/colors/gruvbox.vim"))
+	colorscheme gruvbox
+else
+	colorscheme darkblue
+endif
 " color morning
 set background=dark
 set viminfo='1000,<999

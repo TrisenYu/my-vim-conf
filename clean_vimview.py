@@ -3,7 +3,7 @@
 # SPDX-LICENSE-IDENTIFIER: GPL2.0
 # (C) All rights reserved. Author: <kisfg@hotmail.com> in 2025
 # Created at 2025年07月22日 星期二 17时15分40秒
-# Last modified at 2025年08月02日 星期六 16时40分46秒
+# Last modified at 2025/09/16 星期二 16:49:42
 from datetime import datetime
 import os
 
@@ -12,7 +12,7 @@ _target_dir: str = f'{_home_dir}/.vim/view/'
 
 def clean_views(rm_all: bool=False) -> None:
     """
-    清理当前所在文件夹下的 view 目录中超过7天没有更改的view文件
+    清理当前所在文件夹下的view目录中超过7天没有更改的view文件
     """
     global _target_dir
     dirs = os.listdir(_target_dir)
